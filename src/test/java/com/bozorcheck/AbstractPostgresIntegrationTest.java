@@ -1,6 +1,7 @@
 package com.bozorcheck;
 
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -8,8 +9,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.lifecycle.Startables;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class AbstractPostgresIntegrationTest {
+public abstract class AbstractPostgresIntegrationTest {
 
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
         .withDatabaseName("bozorcheck")

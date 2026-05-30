@@ -38,4 +38,8 @@ public class AppUser {
 
     @Column(name = "last_seen_at")
     private OffsetDateTime lastSeenAt;
+
+    public AppUser(String anonymousKeyHash) {
+        this.anonymousKeyHash = anonymousKeyHash;
+    }
 }

@@ -1,0 +1,91 @@
+@baseUrl = http://localhost:8080
+
+### Products
+GET {{baseUrl}}/api/v1/products
+
+### Product Search
+GET {{baseUrl}}/api/v1/products?query=tomato
+
+### Markets
+GET {{baseUrl}}/api/v1/markets
+
+### Price Summary
+GET {{baseUrl}}/api/v1/prices/summary?productCode=TOMATO&marketCode=TASHKENT_CHORSU
+
+### Price History
+GET {{baseUrl}}/api/v1/prices/history?productCode=TOMATO&marketCode=TASHKENT_CHORSU
+
+### Price Check
+POST {{baseUrl}}/api/v1/prices/check
+Content-Type: application/json
+
+{
+  "productCode": "TOMATO",
+  "marketCode": "TASHKENT_CHORSU",
+  "quotedPrice": 22000,
+  "unitCode": "KG"
+}
+
+### User Price Report
+POST {{baseUrl}}/api/v1/reports
+Content-Type: application/json
+X-Anonymous-Key: local-dev-user-1
+
+{
+  "productCode": "TOMATO",
+  "marketCode": "TASHKENT_CHORSU",
+  "rawProductName": "pomidor",
+  "submittedPrice": 16000,
+  "submittedUnit": "KG",
+  "photoUrl": null,
+  "latitude": 41.3265,
+  "longitude": 69.2286
+}
+
+### Admin Price Observation Create
+POST {{baseUrl}}/api/v1/admin/price-observations
+Content-Type: application/json
+
+{
+  "productCode": "TOMATO",
+  "marketCode": "TASHKENT_CHORSU",
+  "sourceCode": "FIELD_SURVEY",
+  "observedAt": "2026-05-30T10:00:00+09:00",
+  "priceAmount": 16000,
+  "currency": "UZS",
+  "unitCode": "KG",
+  "normalizedPricePerKg": 16000,
+  "qualityGrade": "STANDARD",
+  "status": "APPROVED",
+  "trustScore": 0.8,
+  "rawPayload": {
+    "note": "manual field survey"
+  }
+}
+
+### Admin Reports
+GET {{baseUrl}}/api/v1/admin/reports?status=PENDING
+
+### Admin Report Approve
+@reportId = replace-with-report-id
+POST {{baseUrl}}/api/v1/admin/reports/{{reportId}}/approve
+Content-Type: application/json
+
+{
+  "sourceCode": "USER_REPORT",
+  "trustScore": 0.6,
+  "qualityGrade": "STANDARD",
+  "normalizedPricePerKg": 16000,
+  "reviewNote": "Looks valid from photo and location."
+}
+
+### Admin Price Summary Recompute
+POST {{baseUrl}}/api/v1/admin/price-summaries/recompute
+Content-Type: application/json
+
+{
+  "productCode": "TOMATO",
+  "marketCode": "TASHKENT_CHORSU",
+  "summaryDate": "2026-05-30",
+  "summaryGrain": "DAILY"
+}

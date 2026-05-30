@@ -3,3 +3,10 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/bozorcheck}
     username: ${DB_USERNAME:bozorcheck}
     password: ${DB_PASSWORD:bozorcheck_local_password}
+
+bozorcheck:
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+      - http://localhost:5173
+      - http://localhost:8081

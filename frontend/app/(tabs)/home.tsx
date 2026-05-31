@@ -1,11 +1,13 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { MOCK_DATA_NOTICE, findMockSummary } from '@/src/api/mockData';
+import { USE_MOCK_API } from '@/src/api/apiClient';
+import type { ProductResponse } from '@/src/api/apiTypes';
+import { MOCK_DATA_NOTICE } from '@/src/api/mockData';
 import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
-import { ConfidenceBadge } from '@/src/components/common/ConfidenceBadge';
+import { EmptyState } from '@/src/components/common/EmptyState';
 import { ErrorState } from '@/src/components/common/ErrorState';
 import { LoadingState } from '@/src/components/common/LoadingState';
 import { Screen } from '@/src/components/common/Screen';
@@ -14,6 +16,7 @@ import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
 import { useMarkets } from '@/src/hooks/useMarkets';
+import { usePriceSummary } from '@/src/hooks/usePriceSummary';
 import { useProducts } from '@/src/hooks/useProducts';
 import { routes } from '@/src/navigation/routes';
 import { useAppSettingsStore } from '@/src/stores/appSettingsStore';
@@ -36,8 +39,6 @@ export default function HomeScreen() {
 
   const selectedMarket = markets.data.find((market) => market.code === selectedMarketCode);
   const topProducts = products.data.slice(0, 5);
-  const trusted = topProducts.filter((product) => findMockSummary(product.code, selectedMarketCode).confidenceScore >= 0.8);
-  const lowData = topProducts.filter((product) => findMockSummary(product.code, selectedMarketCode).confidenceScore < 0.8);
 
   return (
     <Screen>
@@ -48,7 +49,7 @@ export default function HomeScreen() {
         </View>
         <View style={styles.mockBadge}>
           <AppText variant="caption" style={styles.mockText}>
-            {t('mockApi')}
+            {USE_MOCK_API ? t('mockApi') : 'Real API'}
           </AppText>
         </View>
       </View>
@@ -70,26 +71,16 @@ export default function HomeScreen() {
 
       <AppText variant="sectionTitle">{t('todayPrices')}</AppText>
       {topProducts.map((product) => (
-        <ProductPriceSummaryCard key={product.code} compact summary={findMockSummary(product.code, selectedMarketCode)} />
+        <HomeProductSummary key={product.code} marketCode={selectedMarketCode} product={product} />
       ))}
 
       <AppCard>
         <AppText variant="sectionTitle">{t('confidenceSummary')}</AppText>
-        <View style={styles.confidenceRow}>
-          <View style={styles.confidenceColumn}>
-            <AppText variant="caption" muted>
-              신뢰도 높은 품목
-            </AppText>
-            <AppText>{trusted.map((product) => product.nameEn).join(', ') || 'None'}</AppText>
-          </View>
-          <View style={styles.confidenceColumn}>
-            <AppText variant="caption" muted>
-              데이터 보강 필요
-            </AppText>
-            <AppText>{lowData.map((product) => product.nameEn).join(', ') || 'None'}</AppText>
-          </View>
-        </View>
-        <ConfidenceBadge score={findMockSummary('TOMATO', selectedMarketCode).confidenceScore} />
+        <AppText muted>
+          {USE_MOCK_API
+            ? 'Mock summaries show representative confidence badges.'
+            : 'Each product card shows its latest API confidence score when available.'}
+        </AppText>
       </AppCard>
 
       <AppCard>
@@ -97,23 +88,45 @@ export default function HomeScreen() {
         <AppText muted>{recentSearches.length > 0 ? recentSearches.join(', ') : 'No recent searches'}</AppText>
       </AppCard>
 
-      <AppText variant="caption" muted>
-        {MOCK_DATA_NOTICE}
-      </AppText>
+      {USE_MOCK_API ? (
+        <AppText variant="caption" muted>
+          {MOCK_DATA_NOTICE}
+        </AppText>
+      ) : null}
     </Screen>
   );
 }
 
+function HomeProductSummary({ marketCode, product }: { marketCode: string; product: ProductResponse }) {
+  const { t } = useI18n();
+  const summary = usePriceSummary(product.code, marketCode);
+  if (summary.isLoading) {
+    return (
+      <AppCard>
+        <AppText variant="sectionTitle">{product.nameEn}</AppText>
+        <LoadingState />
+      </AppCard>
+    );
+  }
+  if (summary.error || !summary.data) {
+    return (
+      <AppCard>
+        <AppText variant="sectionTitle">{product.nameEn}</AppText>
+        <EmptyState message={t('lowData')} />
+      </AppCard>
+    );
+  }
+  return (
+    <View>
+      <AppText variant="caption" muted>
+        {product.code}
+      </AppText>
+      <ProductPriceSummaryCard compact summary={summary.data} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  confidenceColumn: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  confidenceRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginVertical: spacing.md,
-  },
   ctaStack: {
     gap: spacing.md,
   },

@@ -5,9 +5,14 @@ import type {
   PriceHistoryResponse,
   PriceSummaryResponse,
 } from '@/src/api/apiTypes';
+import {
+  adaptPriceCheck,
+  adaptPriceHistory,
+  adaptPriceSummary,
+} from '@/src/api/adapters/priceAdapter';
 import { checkMockPrice, getMockPriceHistory, getMockPriceSummary } from '@/src/api/mockApi';
 
-export function getPriceSummary(
+export async function getPriceSummary(
   productCode: string,
   marketCode?: string,
   date?: string,
@@ -18,10 +23,10 @@ export function getPriceSummary(
   const params = new URLSearchParams({ productCode });
   if (marketCode) params.set('marketCode', marketCode);
   if (date) params.set('date', date);
-  return request<PriceSummaryResponse>(`/api/v1/prices/summary?${params.toString()}`);
+  return adaptPriceSummary(await request<unknown>(`/api/v1/prices/summary?${params.toString()}`));
 }
 
-export function getPriceHistory(
+export async function getPriceHistory(
   productCode: string,
   marketCode?: string,
   from?: string,
@@ -34,15 +39,25 @@ export function getPriceHistory(
   if (marketCode) params.set('marketCode', marketCode);
   if (from) params.set('from', from);
   if (to) params.set('to', to);
-  return request<PriceHistoryResponse>(`/api/v1/prices/history?${params.toString()}`);
+  return adaptPriceHistory(await request<unknown>(`/api/v1/prices/history?${params.toString()}`));
 }
 
-export function checkPrice(requestBody: PriceCheckRequest): Promise<PriceCheckResponse> {
+export async function checkPrice(requestBody: PriceCheckRequest): Promise<PriceCheckResponse> {
   if (USE_MOCK_API) {
     return checkMockPrice(requestBody);
   }
-  return request<PriceCheckResponse>('/api/v1/prices/check', {
+  const rawCheck = await request<unknown>('/api/v1/prices/check', {
     method: 'POST',
     body: JSON.stringify(requestBody),
   });
+  const summary = await getSummaryForDisplay(requestBody);
+  return adaptPriceCheck(rawCheck, summary);
+}
+
+async function getSummaryForDisplay(requestBody: PriceCheckRequest): Promise<PriceSummaryResponse | undefined> {
+  try {
+    return await getPriceSummary(requestBody.productCode, requestBody.marketCode);
+  } catch {
+    return undefined;
+  }
 }

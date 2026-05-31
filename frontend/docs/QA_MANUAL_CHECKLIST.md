@@ -137,3 +137,31 @@ npx expo start
 - Screenshot filename:
 - Severity:
 - Notes:
+
+## 7. Real API Mode Addendum
+
+Before checking real API mode, set:
+
+```text
+EXPO_PUBLIC_API_BASE_URL=http://localhost:8080
+EXPO_PUBLIC_USE_MOCK_API=false
+```
+
+For Expo Go on a physical phone, replace `localhost` with the PC LAN IP, for example:
+
+```text
+EXPO_PUBLIC_API_BASE_URL=http://192.168.0.12:8080
+EXPO_PUBLIC_USE_MOCK_API=false
+```
+
+Confirm these additional items:
+
+- Dev API Status shows API mode `real`.
+- Dev API Status shows products ping `ok`.
+- Home loads backend products and markets.
+- Search `tomato` returns `TOMATO`.
+- Search `pomidor` returns `TOMATO`; if backend alias search returns empty, the frontend fallback may still show the item.
+- Product Detail shows the data-shortage message when no summary exists.
+- Product Detail shows summary/history after approved observations are seeded and recomputed.
+- Price Check uses the backend verdict response.
+- Report Price returns `PENDING` from `POST /api/v1/reports`.

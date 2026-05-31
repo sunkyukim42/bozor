@@ -5,6 +5,7 @@ import { createPriceReport } from '@/src/api/reportApi';
 
 export function useReportPrice() {
   return useMutation({
+    mutationKey: ['priceReport'],
     mutationFn: (request: PriceReportCreateRequest) => createPriceReport(request),
   });
 }

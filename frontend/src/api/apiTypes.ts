@@ -1,8 +1,19 @@
-export type ApiResponse<T> = {
-  success: boolean;
+export type ApiSuccessResponse<T> = {
+  success: true;
   data: T;
   message: string | null;
 };
+
+export type ErrorResponse = {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+    details?: Record<string, unknown>;
+  };
+};
+
+export type ApiResponse<T> = ApiSuccessResponse<T> | ErrorResponse;
 
 export type PageResponse<T> = {
   content: T[];
@@ -124,7 +135,7 @@ export type PriceReportResponse = {
   rawProductName: string | null;
   submittedPrice: number;
   submittedUnit: string;
-  normalizedObservationId: null;
+  normalizedObservationId: string | null;
   reviewNote: string | null;
   submittedAt: string;
 };

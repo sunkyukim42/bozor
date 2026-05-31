@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
+import { EmptyState } from '@/src/components/common/EmptyState';
 import { ErrorState } from '@/src/components/common/ErrorState';
 import { LoadingState } from '@/src/components/common/LoadingState';
 import { Screen } from '@/src/components/common/Screen';
@@ -24,11 +25,11 @@ export default function ProductDetailScreen() {
   const summary = usePriceSummary(productCode, selectedMarketCode);
   const history = usePriceHistory(productCode, selectedMarketCode);
 
-  if (product.isLoading || summary.isLoading || history.isLoading) {
+  if (product.isLoading) {
     return <LoadingState />;
   }
-  if (product.error || summary.error || history.error || !product.data || !summary.data || !history.data) {
-    return <ErrorState message="가격 요약을 불러오지 못했습니다." />;
+  if (product.error || !product.data) {
+    return <ErrorState message="상품 정보를 불러오지 못했습니다." />;
   }
 
   return (
@@ -40,9 +41,19 @@ export default function ProductDetailScreen() {
         </AppText>
       </View>
 
-      <ProductPriceSummaryCard summary={summary.data} />
+      {summary.isLoading ? <LoadingState /> : null}
+      {summary.error || !summary.data ? (
+        <EmptyState message="아직 이 시장의 데이터가 충분하지 않습니다. 참고용으로 확인해 주세요." />
+      ) : (
+        <ProductPriceSummaryCard summary={summary.data} />
+      )}
       <AppCard>
-        <PriceHistoryChart items={history.data.summaries} />
+        {history.isLoading ? <LoadingState /> : null}
+        {history.error || !history.data || history.data.summaries.length === 0 ? (
+          <EmptyState message="아직 표시할 가격 흐름 데이터가 충분하지 않습니다." />
+        ) : (
+          <PriceHistoryChart items={history.data.summaries} />
+        )}
       </AppCard>
 
       <View style={styles.ctaStack}>

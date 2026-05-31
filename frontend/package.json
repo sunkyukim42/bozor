@@ -29,7 +29,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "~19.2.2",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~56.0.4",
@@ -45,6 +45,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
     "test": "jest",
+    "test:integration": "node scripts/integration-smoke-test.js",
     "test:web-smoke": "node scripts/web-smoke-check.mjs"
   },
   "private": true,

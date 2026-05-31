@@ -6,6 +6,7 @@ import { LoadingState } from '@/src/components/common/LoadingState';
 import { Screen } from '@/src/components/common/Screen';
 import { PriceCheckForm } from '@/src/components/price/PriceCheckForm';
 import { PriceCheckResultCard } from '@/src/components/price/PriceCheckResultCard';
+import { getFriendlyErrorMessage } from '@/src/api/apiErrors';
 import { useI18n } from '@/src/hooks/useI18n';
 import { useMarkets } from '@/src/hooks/useMarkets';
 import { usePriceCheck } from '@/src/hooks/usePriceCheck';
@@ -40,6 +41,7 @@ export default function CheckScreen() {
         products={products.data}
         onSubmit={(request) => checkMutation.mutate(request)}
       />
+      {checkMutation.error ? <ErrorState message={getFriendlyErrorMessage(checkMutation.error)} /> : null}
       {checkMutation.data ? <PriceCheckResultCard result={checkMutation.data} /> : null}
     </Screen>
   );

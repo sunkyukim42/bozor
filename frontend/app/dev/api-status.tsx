@@ -1,6 +1,9 @@
+import { useQuery } from '@tanstack/react-query';
 import { StyleSheet, View } from 'react-native';
 
 import { API_BASE_URL, USE_MOCK_API } from '@/src/api/apiClient';
+import { getFriendlyErrorMessage } from '@/src/api/apiErrors';
+import { getProducts } from '@/src/api/productApi';
 import { MOCK_DATA_NOTICE, mockMarkets, mockProducts } from '@/src/api/mockData';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
@@ -10,6 +13,12 @@ import { useI18n } from '@/src/hooks/useI18n';
 
 export default function ApiStatusScreen() {
   const { t } = useI18n();
+  const productsPing = useQuery({
+    queryKey: ['devApiProductsPing', USE_MOCK_API],
+    queryFn: () => getProducts(),
+    retry: false,
+  });
+
   return (
     <Screen>
       <AppText variant="title">{t('apiStatus')}</AppText>
@@ -18,6 +27,16 @@ export default function ApiStatusScreen() {
         <StatusRow label={t('apiBaseUrl')} value={API_BASE_URL} />
         <StatusRow label="Mock products" value={String(mockProducts.length)} />
         <StatusRow label="Mock markets" value={String(mockMarkets.length)} />
+        <StatusRow
+          label="Products ping"
+          value={
+            productsPing.isLoading
+              ? 'checking'
+              : productsPing.error
+                ? getFriendlyErrorMessage(productsPing.error)
+                : `ok (${productsPing.data?.length ?? 0})`
+          }
+        />
       </AppCard>
       <AppCard>
         <AppText variant="sectionTitle">Phase 4</AppText>

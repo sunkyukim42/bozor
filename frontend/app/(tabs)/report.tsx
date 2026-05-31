@@ -6,6 +6,7 @@ import { LoadingState } from '@/src/components/common/LoadingState';
 import { Screen } from '@/src/components/common/Screen';
 import { ReportPriceForm } from '@/src/components/report/ReportPriceForm';
 import { ReportStatusCard } from '@/src/components/report/ReportStatusCard';
+import { getFriendlyErrorMessage } from '@/src/api/apiErrors';
 import { useI18n } from '@/src/hooks/useI18n';
 import { useMarkets } from '@/src/hooks/useMarkets';
 import { useProducts } from '@/src/hooks/useProducts';
@@ -40,6 +41,7 @@ export default function ReportScreen() {
         products={products.data}
         onSubmit={(request) => reportMutation.mutate(request)}
       />
+      {reportMutation.error ? <ErrorState message={getFriendlyErrorMessage(reportMutation.error)} /> : null}
       {reportMutation.data ? <ReportStatusCard report={reportMutation.data} /> : null}
     </Screen>
   );

@@ -24,6 +24,7 @@ npx expo start --web
 npm run typecheck
 npm run lint
 npm test
+npm run test:integration
 ```
 
 ## Environment
@@ -37,12 +38,28 @@ EXPO_PUBLIC_USE_MOCK_API=true
 
 `EXPO_PUBLIC_` values are bundled into the client. Do not put API keys, Dify keys, Telegram tokens, or secrets here.
 
+For real Spring API mode on Expo Web:
+
+```text
+EXPO_PUBLIC_API_BASE_URL=http://localhost:8080
+EXPO_PUBLIC_USE_MOCK_API=false
+```
+
+For Expo Go on a physical phone, `localhost` points to the phone itself. Use the PC LAN IP, for example:
+
+```text
+EXPO_PUBLIC_API_BASE_URL=http://192.168.0.12:8080
+EXPO_PUBLIC_USE_MOCK_API=false
+```
+
+See `docs/REAL_API_TESTING.md` for backend seed data, CORS, LAN IP, and integration smoke test steps.
+
 ## Screens
 
 - Home: selected market, mock API status, five key price cards, CTAs, recent searches, confidence summary.
 - Search: product search by code, Korean, English, Uzbek, Russian, and aliases.
 - Product Detail: fair price range, chart, confidence, sample count, source breakdown.
-- Price Check: deterministic price verdict from mock summary data.
+- Price Check: deterministic backend verdict in real mode, mock verdict in mock mode.
 - Report Price: mock report creation with `PENDING` result.
 - Settings: locale, default market, API status, recent search reset.
 - Dev API Status: mock mode, base URL, counts, Dify and Telegram not connected.
@@ -70,7 +87,7 @@ Price verdict logic mirrors the Spring backend:
 
 ## Not Connected Yet
 
-- Real Spring API integration is planned for phase 4.
+- Real Spring API integration is available when `EXPO_PUBLIC_USE_MOCK_API=false`.
 - Dify is not connected.
 - Telegram is not connected.
 - No OpenAI/LLM API is called.

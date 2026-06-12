@@ -17,12 +17,17 @@ class DatabaseMigrationTest extends AbstractPostgresIntegrationTest {
 
     @Test
     void contextLoadsAndFlywayMigrationsApply() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("3");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("4");
 
         Integer productCount = jdbcTemplate.queryForObject("select count(*) from products", Integer.class);
         Integer observationCount = jdbcTemplate.queryForObject("select count(*) from price_observations", Integer.class);
+        Integer surveySummaryCount = jdbcTemplate.queryForObject(
+            "select count(*) from price_summaries where summary_date = date '2026-06-05'",
+            Integer.class
+        );
 
-        assertThat(productCount).isNotNull().isGreaterThanOrEqualTo(10);
-        assertThat(observationCount).isNotNull().isGreaterThanOrEqualTo(10);
+        assertThat(productCount).isNotNull().isGreaterThanOrEqualTo(14);
+        assertThat(observationCount).isNotNull().isGreaterThanOrEqualTo(30);
+        assertThat(surveySummaryCount).isNotNull().isGreaterThanOrEqualTo(20);
     }
 }

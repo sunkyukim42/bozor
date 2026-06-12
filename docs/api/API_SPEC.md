@@ -61,6 +61,29 @@ Query params: `productCode` required, `marketCode` default `TASHKENT_CHORSU`, `d
 
 Returns the requested DAILY summary if `date` is present, otherwise the latest DAILY summary.
 
+Phase 4 local seed data includes `2026-06-05` survey-backed summaries for `TASHKENT_CHORSU` and
+`KORZINKA_ONLINE`. Summary responses include optional metadata when backed by survey/reference rows:
+
+```json
+{
+  "productCode": "RICE",
+  "marketCode": "TASHKENT_CHORSU",
+  "summaryDate": "2026-06-05",
+  "fairLow": 14300,
+  "fairMid": 15000,
+  "fairHigh": 15800,
+  "sampleCount": 1,
+  "confidenceScore": 0.58,
+  "sourceBreakdown": {
+    "FIELD_SURVEY": 1
+  },
+  "surveyDate": "2026-06-05",
+  "location": "Chorsu Bazaar and Korzinka, Tashkent",
+  "dataSource": "FIELD_SURVEY",
+  "dataNote": "Field survey/reference data for real API development; not live pricing."
+}
+```
+
 ### `GET /api/v1/prices/history`
 
 Query params: `productCode` required, `marketCode` default `TASHKENT_CHORSU`, `from`, `to`, `grain` default `DAILY`.
@@ -79,6 +102,7 @@ Returns summaries ordered by `summaryDate` ascending. Without `from` and `to`, t
 ```
 
 Returns deterministic verdict `CHEAP`, `FAIR`, `EXPENSIVE`, or `VERY_EXPENSIVE`. No AI or Dify call is made.
+The response also includes `sampleCount`, `sourceBreakdown`, and optional survey metadata when available.
 
 ### `POST /api/v1/reports`
 
@@ -98,6 +122,23 @@ Optional header: `X-Anonymous-Key`.
 ```
 
 Creates a `PENDING` report. If `X-Anonymous-Key` is provided, only its SHA-256 hash is stored.
+
+For unit-specific products, use the product default unit. Examples: `KG` for `RICE`, `PCS_10` for `EGGS`,
+and `LITER` for `VEGETABLE_OIL`.
+
+## Phase 4 Local Survey Seed
+
+The backend seed contains real-API development rows for `2026-06-05`; these are field survey/reference
+data, not guaranteed live prices. Added products are:
+
+- `RICE`
+- `EGGS`
+- `VEGETABLE_OIL`
+- `BEEF`
+
+Search aliases include `rice`, `guruch`, `tuxum`, and `mol go'shti`. Korzinka rice stores the original
+`13,490 UZS / 900g` reference in `raw_payload` and exposes the 1kg normalized fair band. Korzinka tomato
+keeps the Red/Pink greenhouse range note.
 
 ## Admin APIs
 

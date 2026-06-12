@@ -1,6 +1,7 @@
 package com.bozorcheck.api;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,7 +22,7 @@ class ProductApiTest extends AbstractPostgresIntegrationTest {
         mockMvc.perform(get("/api/v1/products"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.data[*].code", hasItem("TOMATO")));
+            .andExpect(jsonPath("$.data[*].code", hasItems("TOMATO", "RICE", "EGGS", "VEGETABLE_OIL", "BEEF")));
     }
 
     @Test
@@ -29,6 +30,25 @@ class ProductApiTest extends AbstractPostgresIntegrationTest {
         mockMvc.perform(get("/api/v1/products").param("query", "tomato"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data[*].code", hasItem("TOMATO")));
+    }
+
+    @Test
+    void querySearchIncludesLocalSurveyAliases() throws Exception {
+        mockMvc.perform(get("/api/v1/products").param("query", "rice"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[*].code", hasItem("RICE")));
+
+        mockMvc.perform(get("/api/v1/products").param("query", "guruch"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[*].code", hasItem("RICE")));
+
+        mockMvc.perform(get("/api/v1/products").param("query", "tuxum"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[*].code", hasItem("EGGS")));
+
+        mockMvc.perform(get("/api/v1/products").param("query", "mol go'shti"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[*].code", hasItem("BEEF")));
     }
 
     @Test

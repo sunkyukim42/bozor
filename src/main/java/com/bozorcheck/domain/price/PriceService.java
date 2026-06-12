@@ -14,7 +14,11 @@ import com.bozorcheck.domain.price.dto.PriceSummaryResponse;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -27,15 +31,18 @@ public class PriceService {
     private final ProductService productService;
     private final MarketService marketService;
     private final PriceSummaryRepository priceSummaryRepository;
+    private final PriceObservationRepository priceObservationRepository;
 
     public PriceService(
         ProductService productService,
         MarketService marketService,
-        PriceSummaryRepository priceSummaryRepository
+        PriceSummaryRepository priceSummaryRepository,
+        PriceObservationRepository priceObservationRepository
     ) {
         this.productService = productService;
         this.marketService = marketService;
         this.priceSummaryRepository = priceSummaryRepository;
+        this.priceObservationRepository = priceObservationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -103,13 +110,20 @@ public class PriceService {
             verdict,
             summary.fairMid(),
             overFairHighPercent,
-            summary.confidenceScore()
+            summary.confidenceScore(),
+            summary.sampleCount(),
+            summary.sourceBreakdown(),
+            summary.surveyDate(),
+            summary.location(),
+            summary.dataSource(),
+            summary.dataNote()
         );
     }
 
     public PriceSummaryResponse toSummaryResponse(PriceSummary summary) {
         Product product = summary.getProduct();
         Market market = summary.getMarket();
+        SummaryMetadata metadata = summaryMetadata(summary);
         return new PriceSummaryResponse(
             product.getCode(),
             product.getNameEn(),
@@ -125,8 +139,56 @@ public class PriceService {
             summary.getSampleCount(),
             summary.getConfidenceScore(),
             summary.getSourceBreakdown(),
-            summary.getComputedAt()
+            summary.getComputedAt(),
+            metadata.surveyDate(),
+            metadata.location(),
+            metadata.dataSource(),
+            metadata.dataNote()
         );
+    }
+
+    private SummaryMetadata summaryMetadata(PriceSummary summary) {
+        OffsetDateTime from = OffsetDateTime.of(summary.getSummaryDate(), LocalTime.MIN, ZoneOffset.UTC);
+        OffsetDateTime to = from.plusDays(1);
+        List<PriceObservation> observations = priceObservationRepository
+            .findByProductAndMarketAndStatusAndObservedAtGreaterThanEqualAndObservedAtLessThanOrderByObservedAtAsc(
+                summary.getProduct(),
+                summary.getMarket(),
+                com.bozorcheck.common.enums.ReviewStatus.APPROVED,
+                from,
+                to
+            );
+        if (observations.isEmpty()) {
+            return SummaryMetadata.empty();
+        }
+
+        PriceObservation primary = observations.stream()
+            .filter(observation -> !observation.getRawPayload().isEmpty())
+            .findFirst()
+            .orElse(observations.getFirst());
+        Map<String, Object> payload = primary.getRawPayload();
+        String dataSource = text(payload.get("dataSource"));
+        if (dataSource == null) {
+            dataSource = primary.getSource().getCode();
+        }
+        String dataNote = text(payload.get("dataNote"));
+        if (dataNote == null) {
+            dataNote = text(payload.get("note"));
+        }
+        return new SummaryMetadata(
+            text(payload.get("surveyDate")),
+            text(payload.get("location")),
+            dataSource,
+            dataNote
+        );
+    }
+
+    private String text(Object value) {
+        if (value == null) {
+            return null;
+        }
+        String text = value.toString().trim();
+        return text.isEmpty() ? null : text;
     }
 
     private String defaultMarketCode(String marketCode) {
@@ -153,5 +215,12 @@ public class PriceService {
         return quotedPrice.subtract(fairHigh)
             .multiply(new BigDecimal("100"))
             .divide(fairHigh, 2, RoundingMode.HALF_UP);
+    }
+
+    private record SummaryMetadata(String surveyDate, String location, String dataSource, String dataNote) {
+
+        private static SummaryMetadata empty() {
+            return new SummaryMetadata(null, null, null, null);
+        }
     }
 }

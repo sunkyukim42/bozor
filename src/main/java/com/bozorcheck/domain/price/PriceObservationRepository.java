@@ -19,4 +19,12 @@ public interface PriceObservationRepository
         OffsetDateTime from,
         OffsetDateTime to
     );
+
+    List<PriceObservation> findByProductAndMarketAndStatusAndObservedAtGreaterThanEqualAndObservedAtLessThanOrderByObservedAtAsc(
+        Product product,
+        Market market,
+        ReviewStatus status,
+        OffsetDateTime from,
+        OffsetDateTime to
+    );
 }

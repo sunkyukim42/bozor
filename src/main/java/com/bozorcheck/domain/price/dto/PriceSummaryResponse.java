@@ -21,6 +21,10 @@ public record PriceSummaryResponse(
     int sampleCount,
     BigDecimal confidenceScore,
     Map<String, Object> sourceBreakdown,
-    OffsetDateTime computedAt
+    OffsetDateTime computedAt,
+    String surveyDate,
+    String location,
+    String dataSource,
+    String dataNote
 ) {
 }

@@ -6,11 +6,23 @@ GET {{baseUrl}}/api/v1/products
 ### Product Search
 GET {{baseUrl}}/api/v1/products?query=tomato
 
+### Product Search Rice
+GET {{baseUrl}}/api/v1/products?query=rice
+
+### Product Search Tuxum
+GET {{baseUrl}}/api/v1/products?query=tuxum
+
 ### Markets
 GET {{baseUrl}}/api/v1/markets
 
 ### Price Summary
 GET {{baseUrl}}/api/v1/prices/summary?productCode=TOMATO&marketCode=TASHKENT_CHORSU
+
+### Phase 4 Rice Survey Summary
+GET {{baseUrl}}/api/v1/prices/summary?productCode=RICE&marketCode=TASHKENT_CHORSU&date=2026-06-05
+
+### Phase 4 Eggs Survey Summary
+GET {{baseUrl}}/api/v1/prices/summary?productCode=EGGS&marketCode=TASHKENT_CHORSU&date=2026-06-05
 
 ### Price History
 GET {{baseUrl}}/api/v1/prices/history?productCode=TOMATO&marketCode=TASHKENT_CHORSU
@@ -37,6 +49,22 @@ X-Anonymous-Key: local-dev-user-1
   "rawProductName": "pomidor",
   "submittedPrice": 16000,
   "submittedUnit": "KG",
+  "photoUrl": null,
+  "latitude": 41.3265,
+  "longitude": 69.2286
+}
+
+### User Eggs Price Report
+POST {{baseUrl}}/api/v1/reports
+Content-Type: application/json
+X-Anonymous-Key: local-dev-user-2
+
+{
+  "productCode": "EGGS",
+  "marketCode": "TASHKENT_CHORSU",
+  "rawProductName": "tuxum",
+  "submittedPrice": 16000,
+  "submittedUnit": "PCS_10",
   "photoUrl": null,
   "latitude": 41.3265,
   "longitude": 69.2286

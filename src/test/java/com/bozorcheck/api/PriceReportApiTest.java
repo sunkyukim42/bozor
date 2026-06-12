@@ -43,7 +43,8 @@ class PriceReportApiTest extends AbstractPostgresIntegrationTest {
                     """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.status").value("PENDING"))
-            .andExpect(jsonPath("$.data.productCode").value("TOMATO"));
+            .andExpect(jsonPath("$.data.productCode").value("TOMATO"))
+            .andExpect(jsonPath("$.data.submittedUnit").value("KG"));
 
         assertThat(appUserRepository.findByAnonymousKeyHash(expectedHash)).isPresent();
         assertThat(appUserRepository.findByAnonymousKeyHash(anonymousKey)).isEmpty();

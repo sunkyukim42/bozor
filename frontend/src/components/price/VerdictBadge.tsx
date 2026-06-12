@@ -4,13 +4,20 @@ import type { Verdict } from '@/src/api/apiTypes';
 import { AppText } from '@/src/components/common/AppText';
 import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/radius';
+import { useI18n } from '@/src/hooks/useI18n';
+import { getVerdictI18nKey } from '@/src/utils/priceVerdict';
 
 export function VerdictBadge({ verdict }: { verdict: Verdict }) {
+  const { t } = useI18n();
   const palette = paletteFor(verdict);
+  const titleKey = getVerdictI18nKey(verdict, 'title');
+  const translatedTitle = t(titleKey);
+  const title = translatedTitle === titleKey ? labelFor(verdict) : translatedTitle;
+
   return (
     <View style={[styles.badge, { backgroundColor: palette.background }]}>
       <AppText variant="caption" style={[styles.text, { color: palette.foreground }]}>
-        {labelFor(verdict)}
+        {title}
       </AppText>
     </View>
   );

@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { getOverFairHighPercent, getPriceVerdict } from '@/src/utils/priceVerdict';
+import { getOverFairHighPercent, getPriceVerdict, getVerdictI18nKey } from '@/src/utils/priceVerdict';
 
 describe('price verdict', () => {
   it('returns CHEAP at or below fairLow', () => {
@@ -22,5 +22,12 @@ describe('price verdict', () => {
   it('calculates overFairHighPercent only above fairHigh', () => {
     expect(getOverFairHighPercent(16000, 18500)).toBe(0);
     expect(getOverFairHighPercent(22000, 18500)).toBe(18.92);
+  });
+
+  it('returns dictionary keys for verdict copy', () => {
+    expect(getVerdictI18nKey('CHEAP', 'message')).toBe('verdict.cheap.message');
+    expect(getVerdictI18nKey('FAIR', 'message')).toBe('verdict.fair.message');
+    expect(getVerdictI18nKey('EXPENSIVE', 'title')).toBe('verdict.expensive.title');
+    expect(getVerdictI18nKey('VERY_EXPENSIVE', 'title')).toBe('verdict.veryExpensive.title');
   });
 });

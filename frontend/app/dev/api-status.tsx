@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { API_BASE_URL, USE_MOCK_API } from '@/src/api/apiClient';
 import { getFriendlyErrorMessage } from '@/src/api/apiErrors';
 import { getProducts } from '@/src/api/productApi';
-import { MOCK_DATA_NOTICE, mockMarkets, mockProducts } from '@/src/api/mockData';
+import { MOCK_DATA_NOTICE, SURVEY_DATE, SURVEY_LOCATION, mockMarkets, mockProducts } from '@/src/api/mockData';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
 import { Screen } from '@/src/components/common/Screen';
@@ -46,11 +46,26 @@ export default function ApiStatusScreen() {
         </AppText>
       </AppCard>
       <AppCard>
+        <AppText variant="sectionTitle">Field survey mock data</AppText>
+        <StatusRow label="Survey date" value={SURVEY_DATE} />
+        <StatusRow label="Location" value={SURVEY_LOCATION} />
+        <AppText variant="caption" muted>
+          This is field survey mock data / development demo data, not a guaranteed live market price.
+        </AppText>
+      </AppCard>
+      <AppCard>
         <AppText variant="sectionTitle">External services</AppText>
         <AppText muted>{t('difyNotConnected')}</AppText>
         <AppText muted>{t('telegramNotConnected')}</AppText>
         <AppText variant="caption" muted>
-          AI bargaining coach coming later
+          Future AI direction: Product Normalizer, Report Inspector, and Price Insight Explainer.
+        </AppText>
+        <AppText variant="caption" muted>
+          Dify is not connected in this phase and must not generate fair prices.
+        </AppText>
+        <AppText variant="caption" muted>
+          Dedicated Telegram or social media price-tracking channels were not identified; Telegram should be
+          treated as a future user-report or alert channel, not an automatic price source.
         </AppText>
       </AppCard>
     </Screen>

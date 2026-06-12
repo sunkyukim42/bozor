@@ -125,6 +125,16 @@ Mock mode uses local frontend agent responses built from the same survey/demo mo
 
 The agent cards are explanatory support only. They do not create fair prices, do not auto-approve reports, and do not call Dify, OpenAI, Telegram, or any other external AI service.
 
+## 5A-QA Demo Readiness
+
+Use these docs before a demo or 5B Dify provider handoff:
+
+- `docs/QA_AGENT_UX_CHECKLIST.md`: Web manual QA for Home briefing, Search normalizer, Price Insight, Report Inspector, Dev Agent Lab, Settings, and Dev API Status.
+- `docs/QA_MOBILE_AGENT_UX_CHECKLIST.md`: iPhone Expo Go real API QA with LAN IP, backend reachability, tunnel fallback, and mobile layout checks.
+- `docs/DEMO_AGENT_SCENARIO.md`: presentation flow and fallback plan for showing the Spring mock agent provider layer before Dify is connected.
+
+Real backend smoke must be run with Spring Boot available at `EXPO_PUBLIC_API_BASE_URL`. If backend startup is blocked, mark integration smoke as `NOT_CHECKED`, not `PASS`.
+
 ## Manual Test Scenarios
 
 1. Home에서 주요 품목 가격 카드 확인.

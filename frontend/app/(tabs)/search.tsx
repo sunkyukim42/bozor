@@ -2,6 +2,9 @@ import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useState } from 'react';
 
+import { getFriendlyErrorMessage } from '@/src/api/apiErrors';
+import type { ProductResponse } from '@/src/api/apiTypes';
+import { ProductNormalizerCard } from '@/src/components/agent/ProductNormalizerCard';
 import { AppText } from '@/src/components/common/AppText';
 import { EmptyState } from '@/src/components/common/EmptyState';
 import { ErrorState } from '@/src/components/common/ErrorState';
@@ -13,17 +16,24 @@ import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/radius';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
+import { useProductNormalize } from '@/src/hooks/useProductNormalize';
 import { useProducts } from '@/src/hooks/useProducts';
 import { routes } from '@/src/navigation/routes';
 import { useRecentSearchStore } from '@/src/stores/recentSearchStore';
 
 export default function SearchScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [query, setQuery] = useState('');
   const products = useProducts(query);
+  const productNormalize = useProductNormalize();
   const recentSearches = useRecentSearchStore((state) => state.recentSearches);
   const addRecentSearch = useRecentSearchStore((state) => state.addRecentSearch);
+  const shouldShowNormalizer = Boolean(
+    query.trim() &&
+      !products.isLoading &&
+      ((products.data?.length ?? 0) === 0 || !products.data?.some((product) => productMatchesExactQuery(product, query))),
+  );
 
   return (
     <Screen>
@@ -53,8 +63,38 @@ export default function SearchScreen() {
           }}
         />
       ))}
+      {shouldShowNormalizer ? (
+        <ProductNormalizerCard
+          errorMessage={productNormalize.error ? getFriendlyErrorMessage(productNormalize.error) : undefined}
+          loading={productNormalize.isPending}
+          query={query}
+          result={
+            productNormalize.data?.rawProductName === query
+              ? productNormalize.data
+              : undefined
+          }
+          onNormalize={() =>
+            productNormalize.mutate({
+              rawProductName: query,
+              locale,
+            })
+          }
+        />
+      ) : null}
     </Screen>
   );
+}
+
+function productMatchesExactQuery(product: ProductResponse, query: string): boolean {
+  const normalized = query.trim().toLowerCase();
+  return [
+    product.code,
+    product.nameEn,
+    product.nameUz,
+    product.nameRu,
+    product.nameKo,
+    ...product.aliases.map((alias) => alias.alias),
+  ].some((value) => value.trim().toLowerCase() === normalized);
 }
 
 const styles = StyleSheet.create({

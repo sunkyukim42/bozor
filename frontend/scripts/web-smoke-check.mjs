@@ -8,6 +8,7 @@ const routes = [
   '/report',
   '/settings',
   '/dev/api-status',
+  '/dev/agent-lab',
   '/product/TOMATO',
 ];
 

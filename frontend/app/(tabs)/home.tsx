@@ -3,7 +3,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { USE_MOCK_API } from '@/src/api/apiClient';
 import type { ProductResponse } from '@/src/api/apiTypes';
-import { MOCK_DATA_NOTICE } from '@/src/api/mockData';
+import { MOCK_DATA_NOTICE, SURVEY_DATE } from '@/src/api/mockData';
+import { MarketBriefingCard } from '@/src/components/agent/MarketBriefingCard';
 import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
@@ -15,6 +16,7 @@ import { ProductPriceSummaryCard } from '@/src/components/product/ProductPriceSu
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
+import { useMarketBriefing } from '@/src/hooks/useMarketBriefing';
 import { useMarkets } from '@/src/hooks/useMarkets';
 import { usePriceSummary } from '@/src/hooks/usePriceSummary';
 import { useProducts } from '@/src/hooks/useProducts';
@@ -24,11 +26,12 @@ import { useRecentSearchStore } from '@/src/stores/recentSearchStore';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const selectedMarketCode = useAppSettingsStore((state) => state.selectedMarketCode);
   const recentSearches = useRecentSearchStore((state) => state.recentSearches);
   const products = useProducts();
   const markets = useMarkets();
+  const marketBriefing = useMarketBriefing(selectedMarketCode, SURVEY_DATE, locale);
 
   if (products.isLoading || markets.isLoading) {
     return <LoadingState />;
@@ -63,6 +66,20 @@ export default function HomeScreen() {
           selectedMarketCode: {selectedMarketCode}
         </AppText>
       </AppCard>
+
+      {marketBriefing.data ? (
+        <MarketBriefingCard briefing={marketBriefing.data} />
+      ) : marketBriefing.isLoading ? (
+        <AppCard>
+          <AppText variant="sectionTitle">{t('agent.marketBriefing.title')}</AppText>
+          <LoadingState />
+        </AppCard>
+      ) : marketBriefing.error ? (
+        <AppCard>
+          <AppText variant="sectionTitle">{t('agent.marketBriefing.title')}</AppText>
+          <AppText muted>Agent briefing is unavailable for this market right now.</AppText>
+        </AppCard>
+      ) : null}
 
       <View style={styles.ctaStack}>
         <AppButton onPress={() => router.push(routes.check)} title={t('checkPrice')} />

@@ -10,11 +10,36 @@ const verdictMessageKeys = [
   'verdict.expensive.message',
   'verdict.veryExpensive.message',
 ];
+const agentKeys = [
+  'agent.marketBriefing.title',
+  'agent.priceInsight.title',
+  'agent.reportInspect.title',
+  'agent.productNormalize.title',
+  'agent.fieldSurveyPlan.title',
+  'agent.mockNotice',
+  'agent.difyNotConnected',
+  'agent.noAutoApproval',
+  'agent.needsHumanReview',
+  'agent.risk.low',
+  'agent.risk.medium',
+  'agent.risk.high',
+  'agent.priority.high',
+  'agent.priority.medium',
+  'agent.priority.low',
+];
 
 describe('i18n dictionaries', () => {
   it('contains verdict messages for all supported locales', () => {
     for (const locale of locales) {
       for (const key of verdictMessageKeys) {
+        expect(dictionaries[locale][key]).toBeTruthy();
+      }
+    }
+  });
+
+  it('contains agent labels for all supported locales', () => {
+    for (const locale of locales) {
+      for (const key of agentKeys) {
         expect(dictionaries[locale][key]).toBeTruthy();
       }
     }

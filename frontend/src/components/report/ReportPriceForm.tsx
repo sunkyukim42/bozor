@@ -17,14 +17,18 @@ type ReportPriceFormProps = {
   defaultMarketCode: string;
   defaultProductCode?: string;
   loading?: boolean;
+  inspectLoading?: boolean;
+  onInspect?: (request: PriceReportCreateRequest) => void;
   onSubmit: (request: PriceReportCreateRequest) => void;
 };
 
 export function ReportPriceForm({
   defaultMarketCode,
   defaultProductCode,
+  inspectLoading,
   loading,
   markets,
+  onInspect,
   onSubmit,
   products,
 }: ReportPriceFormProps) {
@@ -36,6 +40,16 @@ export function ReportPriceForm({
   const selectedProduct = products.find((product) => product.code === productCode);
   const numericPrice = Number(submittedPrice);
   const canSubmit = Boolean((productCode || rawProductName.trim()) && marketCode && numericPrice > 0);
+  const buildRequest = (): PriceReportCreateRequest => ({
+    productCode,
+    marketCode,
+    rawProductName: rawProductName || undefined,
+    submittedPrice: numericPrice,
+    submittedUnit: selectedProduct?.defaultUnit ?? 'KG',
+    photoUrl: null,
+    latitude: null,
+    longitude: null,
+  });
 
   return (
     <View style={styles.wrap}>
@@ -71,21 +85,19 @@ export function ReportPriceForm({
       <AppText variant="caption" muted>
         이번 단계에서는 실제 카메라, 위치 권한, 파일 업로드를 사용하지 않습니다.
       </AppText>
+      {onInspect ? (
+        <AppButton
+          disabled={!canSubmit}
+          loading={inspectLoading}
+          onPress={() => onInspect(buildRequest())}
+          title="Inspect before submit"
+          variant="secondary"
+        />
+      ) : null}
       <AppButton
         disabled={!canSubmit}
         loading={loading}
-        onPress={() =>
-          onSubmit({
-            productCode,
-            marketCode,
-            rawProductName: rawProductName || undefined,
-            submittedPrice: numericPrice,
-            submittedUnit: selectedProduct?.defaultUnit ?? 'KG',
-            photoUrl: null,
-            latitude: null,
-            longitude: null,
-          })
-        }
+        onPress={() => onSubmit(buildRequest())}
         title="제보 제출하기"
       />
     </View>

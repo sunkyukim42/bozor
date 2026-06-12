@@ -61,6 +61,21 @@ const en: Dictionary = {
   telegramNotConnected: 'Telegram: not connected',
   realApiLater: 'Real Spring API mode is available when EXPO_PUBLIC_USE_MOCK_API=false.',
   aiPlaceholder: 'AI price insight assistant coming later',
+  'agent.marketBriefing.title': 'AI Market Briefing',
+  'agent.priceInsight.title': 'Price Insight',
+  'agent.reportInspect.title': 'Report Inspector',
+  'agent.productNormalize.title': 'Product Normalizer',
+  'agent.fieldSurveyPlan.title': 'Field Survey Plan',
+  'agent.mockNotice': 'Mock agent insight based on backend price data.',
+  'agent.difyNotConnected': 'Dify is not connected yet.',
+  'agent.noAutoApproval': 'No auto approval; reports stay in review.',
+  'agent.needsHumanReview': 'Needs human review',
+  'agent.risk.low': 'Low risk',
+  'agent.risk.medium': 'Medium risk',
+  'agent.risk.high': 'High risk',
+  'agent.priority.high': 'High priority',
+  'agent.priority.medium': 'Medium priority',
+  'agent.priority.low': 'Low priority',
 };
 
 const ko: Dictionary = {

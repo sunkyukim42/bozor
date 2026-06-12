@@ -63,6 +63,7 @@ See `docs/REAL_API_TESTING.md` for backend seed data, CORS, LAN IP, and integrat
 - Report Price: report creation with `PENDING` result.
 - Settings: locale, default market, API status, recent search reset.
 - Dev API Status: current API mode, base URL, counts, field survey metadata, Dify and Telegram not connected.
+- Dev Agent Lab: developer smoke checks for the five Spring mock agent API contracts.
 
 ## Mock And Real API Data
 
@@ -117,6 +118,12 @@ Dify is not used as a translation-first chatbot in this phase and is not connect
 Bargaining phrases may be provided later as optional helper text, but the core value is transparent price data, source visibility, confidence scoring, and consistent product standardization.
 
 Do not put Dify keys, OpenAI keys, Telegram tokens, or any other secrets in frontend `EXPO_PUBLIC_` variables.
+
+## 5A-FE Agent Mock API Integration
+
+Mock mode uses local frontend agent responses built from the same survey/demo mock data as the price UI. Real API mode calls the Spring `/api/v1/agent/*` mock provider endpoints through the existing API client.
+
+The agent cards are explanatory support only. They do not create fair prices, do not auto-approve reports, and do not call Dify, OpenAI, Telegram, or any other external AI service.
 
 ## Manual Test Scenarios
 

@@ -49,6 +49,42 @@ async function main() {
   });
   assertEqual(report.status, 'PENDING', 'report status');
 
+  const normalized = await post('/api/v1/agent/product-normalize', 'agent product normalize', {
+    rawProductName: 'pink greenhouse pomidor',
+    locale: 'en',
+  });
+  assertEqual(normalized.standardProductCode, 'TOMATO', 'agent product normalize code');
+
+  const inspection = await post('/api/v1/agent/report-inspect', 'agent report inspect', {
+    productCode: 'RICE',
+    marketCode: 'TASHKENT_CHORSU',
+    submittedPrice: 18000,
+    submittedUnit: 'KG',
+    locale: 'en',
+  });
+  assertIncludes(['REVIEW_REQUIRED', 'FLAGGED'], inspection.statusSuggestion, 'agent report inspect status');
+
+  const insight = await post('/api/v1/agent/price-insight', 'agent price insight', {
+    productCode: 'RICE',
+    marketCode: 'TASHKENT_CHORSU',
+    quotedPrice: 18000,
+    unitCode: 'KG',
+    includeOptionalPhrase: false,
+  });
+  assertEqual(insight.verdict, 'EXPENSIVE', 'agent price insight verdict');
+
+  const briefing = await post('/api/v1/agent/market-briefing', 'agent market briefing', {
+    marketCode: 'TASHKENT_CHORSU',
+    summaryDate: '2026-06-05',
+  });
+  assertTruthy(briefing.briefingTitle, 'agent market briefing title');
+
+  const surveyPlan = await post('/api/v1/agent/field-survey-plan', 'agent field survey plan', {
+    marketCode: 'TASHKENT_CHORSU',
+    summaryDate: '2026-06-05',
+  });
+  assertTruthy(surveyPlan.recommendedPlan, 'agent field survey recommendedPlan');
+
   console.log(`Integration smoke test passed against ${baseUrl}`);
 }
 
@@ -106,6 +142,18 @@ function assertArrayIncludes(items, key, expectedValues, label) {
 function assertEqual(actual, expected, label) {
   if (actual !== expected) {
     throw new Error(`${label} expected ${expected}, got ${actual}`);
+  }
+}
+
+function assertIncludes(expectedValues, actual, label) {
+  if (!expectedValues.includes(actual)) {
+    throw new Error(`${label} expected one of ${expectedValues.join(', ')}, got ${actual}`);
+  }
+}
+
+function assertTruthy(actual, label) {
+  if (!actual) {
+    throw new Error(`${label} expected a truthy value`);
   }
 }
 

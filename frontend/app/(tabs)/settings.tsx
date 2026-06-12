@@ -63,6 +63,7 @@ export default function SettingsScreen() {
       </AppCard>
       <AppButton onPress={clearRecentSearches} title={t('clearRecentSearches')} variant="secondary" />
       <AppButton onPress={() => router.push(routes.apiStatus)} title={t('apiStatus')} />
+      <AppButton onPress={() => router.push(routes.agentLab)} title="Dev Agent Lab" variant="secondary" />
     </Screen>
   );
 }

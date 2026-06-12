@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { StyleSheet, View } from 'react-native';
 
@@ -5,13 +6,16 @@ import { API_BASE_URL, USE_MOCK_API } from '@/src/api/apiClient';
 import { getFriendlyErrorMessage } from '@/src/api/apiErrors';
 import { getProducts } from '@/src/api/productApi';
 import { MOCK_DATA_NOTICE, SURVEY_DATE, SURVEY_LOCATION, mockMarkets, mockProducts } from '@/src/api/mockData';
+import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
 import { Screen } from '@/src/components/common/Screen';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
+import { routes } from '@/src/navigation/routes';
 
 export default function ApiStatusScreen() {
+  const router = useRouter();
   const { t } = useI18n();
   const productsPing = useQuery({
     queryKey: ['devApiProductsPing', USE_MOCK_API],
@@ -52,6 +56,18 @@ export default function ApiStatusScreen() {
         <AppText variant="caption" muted>
           This is field survey mock data / development demo data, not a guaranteed live market price.
         </AppText>
+      </AppCard>
+      <AppCard>
+        <AppText variant="sectionTitle">Agent APIs</AppText>
+        <StatusRow label="Product Normalizer" value={USE_MOCK_API ? 'frontend mock' : 'Spring mock endpoint'} />
+        <StatusRow label="Report Inspector" value={USE_MOCK_API ? 'frontend mock' : 'Spring mock endpoint'} />
+        <StatusRow label="Price Insight" value={USE_MOCK_API ? 'frontend mock' : 'Spring mock endpoint'} />
+        <StatusRow label="Market Briefing" value={USE_MOCK_API ? 'frontend mock' : 'Spring mock endpoint'} />
+        <StatusRow label="Field Survey Planner" value={USE_MOCK_API ? 'frontend mock' : 'Spring mock endpoint'} />
+        <AppText variant="caption" muted>
+          Agent output explains backend data only. It does not generate fair prices or auto-approve reports.
+        </AppText>
+        <AppButton onPress={() => router.push(routes.agentLab)} title="Open Dev Agent Lab" variant="secondary" />
       </AppCard>
       <AppCard>
         <AppText variant="sectionTitle">External services</AppText>

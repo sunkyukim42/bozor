@@ -8,7 +8,7 @@ import { spacing } from '@/src/constants/spacing';
 import { getTypicalPrice } from '@/src/utils/displayLabels';
 import { formatCurrency } from '@/src/utils/formatCurrency';
 
-export function PriceHistoryChart({ items }: { items: PriceHistoryItem[] }) {
+export function PriceHistoryChart({ items, title = 'Price history' }: { items: PriceHistoryItem[]; title?: string }) {
   if (items.length === 0) {
     return null;
   }
@@ -30,7 +30,7 @@ export function PriceHistoryChart({ items }: { items: PriceHistoryItem[] }) {
   return (
     <View style={styles.wrap}>
       <View style={styles.header}>
-        <AppText variant="sectionTitle">Price history</AppText>
+        <AppText variant="sectionTitle">{title}</AppText>
         <AppText variant="caption" muted>
           {formatCurrency(items.at(-1) ? getTypicalPrice(items.at(-1)!) : 0)}
         </AppText>

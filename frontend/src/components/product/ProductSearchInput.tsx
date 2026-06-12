@@ -1,3 +1,4 @@
+import { SymbolView } from 'expo-symbols';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { colors } from '@/src/constants/colors';
@@ -13,6 +14,7 @@ type ProductSearchInputProps = {
 export function ProductSearchInput({ onChangeText, placeholder, value }: ProductSearchInputProps) {
   return (
     <View style={styles.wrap}>
+      <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }} size={20} tintColor={colors.textSecondary} />
       <TextInput
         autoCapitalize="none"
         onChangeText={onChangeText}
@@ -38,6 +40,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.input,
     borderWidth: 1,
     flexDirection: 'row',
+    gap: spacing.sm,
     minHeight: 54,
     paddingHorizontal: spacing.md,
   },

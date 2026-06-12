@@ -1,5 +1,16 @@
-import type { PriceCheckResponse, PriceSummaryResponse, SourceBreakdown } from '@/src/api/apiTypes';
-import type { PriceInsightResponse, ReportInspectResponse, SourceSummary } from '@/src/api/agentTypes';
+import type {
+  MarketResponse,
+  PriceCheckResponse,
+  PriceSummaryResponse,
+  ProductResponse,
+  SourceBreakdown,
+} from '@/src/api/apiTypes';
+import type {
+  PriceInsightResponse,
+  ProductNormalizeResponse,
+  ReportInspectResponse,
+  SourceSummary,
+} from '@/src/api/agentTypes';
 import { formatCurrency, formatPercent } from '@/src/utils/formatCurrency';
 
 type PriceRangeLike = Pick<PriceSummaryResponse | PriceCheckResponse, 'fairLow' | 'fairMid' | 'fairHigh'>;
@@ -12,7 +23,7 @@ type MetadataLike = {
   dataNote?: string;
 };
 
-const SOURCE_SUMMARY_SEPARATOR = ' · ';
+export const DISPLAY_SEPARATOR = ' · ';
 
 export function getFairRangeDisplay(value: PriceRangeLike): {
   lowPrice: number;
@@ -90,7 +101,9 @@ export function formatSampleLabel(count?: number | null): string {
   return `${count} price reports`;
 }
 
-export function formatDataContext(value: Partial<Pick<PriceSummaryResponse | PriceCheckResponse | SourceSummary, 'sampleCount'>>): string {
+export function formatDataContext(
+  value: Partial<Pick<PriceSummaryResponse | PriceCheckResponse | SourceSummary, 'sampleCount'>>,
+): string {
   return formatSampleLabel(value.sampleCount);
 }
 
@@ -103,7 +116,7 @@ export function formatSourceSummary(value?: SourceSummary): string | null {
   if (value.confidenceScore !== undefined) {
     parts.push(formatConfidenceLabel(value.confidenceScore));
   }
-  return parts.join(SOURCE_SUMMARY_SEPARATOR);
+  return parts.join(DISPLAY_SEPARATOR);
 }
 
 export function getPriceCheckDisplayMetrics(result: PriceCheckResponse): { label: string; value: string }[] {
@@ -129,6 +142,70 @@ export function formatMatchedProductLabel(inspection: Pick<ReportInspectResponse
   return inspection.normalizedProductCode ? `Matched product: ${inspection.normalizedProductCode}` : null;
 }
 
+export function formatProductSubtitle(product: Pick<ProductResponse, 'nameUz' | 'nameRu' | 'nameKo'>): string {
+  return [product.nameUz, product.nameRu, product.nameKo].filter(Boolean).join(DISPLAY_SEPARATOR);
+}
+
+export function formatMarketLocation(market?: Pick<MarketResponse, 'code' | 'city' | 'district' | 'address'> | null): string {
+  if (!market) {
+    return 'Tashkent';
+  }
+  if (market.code === 'TASHKENT_CHORSU') {
+    return 'Old City, Tashkent';
+  }
+  return [market.district, market.city].filter(Boolean).join(', ') || market.address || 'Tashkent';
+}
+
+export function formatMarketTypeLabel(market?: Pick<MarketResponse, 'marketType'> | null): string {
+  switch (market?.marketType) {
+    case 'BAZAAR':
+      return 'Bazaar';
+    case 'ONLINE_RETAIL':
+      return 'Reference data';
+    case 'SUPERMARKET':
+      return 'Supermarket';
+    case 'NATIONAL_AVERAGE':
+      return 'National average';
+    default:
+      return 'Market';
+  }
+}
+
+export function formatUpdatedLabel(date?: string | null): string | null {
+  return date ? `Updated ${date}` : null;
+}
+
+export function formatVariantLabel(variant?: string | null): string | null {
+  if (!variant || variant === 'UNKNOWN') {
+    return null;
+  }
+  return variant
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+}
+
+export function formatProductMatchTitle(result: ProductNormalizeResponse): string {
+  if (result.needsHumanReview || !result.standardProductCode) {
+    return 'Needs review';
+  }
+
+  const productName = result.standardProductName ?? titleCaseCode(result.standardProductCode);
+  const variant = formatVariantLabel(result.variant);
+  return variant ? `Matched to ${productName}${DISPLAY_SEPARATOR}${variant}` : `Matched to ${productName}`;
+}
+
+export function formatProductMatchConfidence(score: number): string {
+  if (score >= 0.8) {
+    return 'Confidence: High';
+  }
+  if (score >= 0.5) {
+    return 'Confidence: Medium';
+  }
+  return 'Confidence: Limited';
+}
+
 export function formatSurveyMetadata(value: MetadataLike): string[] {
   const details: string[] = [];
   const date = value.surveyDate ?? value.summaryDate;
@@ -151,4 +228,12 @@ export function formatSurveyMetadata(value: MetadataLike): string[] {
 
 export function hasSourceData(sources?: SourceBreakdown | null): sources is SourceBreakdown {
   return Boolean(sources && Object.values(sources).some((count) => count > 0));
+}
+
+function titleCaseCode(code: string): string {
+  return code
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
 }

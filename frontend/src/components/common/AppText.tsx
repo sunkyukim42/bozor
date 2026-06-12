@@ -21,13 +21,15 @@ type AppTextProps = PropsWithChildren<{
     | 'priceMedium';
   muted?: boolean;
   style?: StyleProp<TextStyle>;
+  numberOfLines?: number;
 }>;
 
-export function AppText({ children, muted, style, variant = 'body' }: AppTextProps) {
+export function AppText({ children, muted, numberOfLines, style, variant = 'body' }: AppTextProps) {
   const textStyle = typography[variant];
 
   return (
     <Text
+      numberOfLines={numberOfLines}
       style={[
         {
           color: muted ? colors.textSecondary : colors.textPrimary,

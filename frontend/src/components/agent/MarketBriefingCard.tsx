@@ -9,7 +9,7 @@ import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
 import { formatSourceSummary } from '@/src/utils/displayLabels';
 
-export function MarketBriefingCard({ briefing }: { briefing: MarketBriefingResponse }) {
+export function MarketBriefingCard({ briefing, compact = false }: { briefing: MarketBriefingResponse; compact?: boolean }) {
   const { t } = useI18n();
   const sourceSummary = formatSourceSummary(briefing.sourceSummary);
 
@@ -24,10 +24,14 @@ export function MarketBriefingCard({ briefing }: { briefing: MarketBriefingRespo
       <AppText variant="caption" muted>
         Based on field survey data
       </AppText>
-      <AppText style={styles.title}>{briefing.briefingTitle}</AppText>
-      <AppText muted>{briefing.summaryText}</AppText>
+      <AppText style={styles.title} numberOfLines={compact ? 1 : undefined}>
+        {briefing.briefingTitle}
+      </AppText>
+      <AppText muted numberOfLines={compact ? 2 : undefined}>
+        {briefing.summaryText}
+      </AppText>
 
-      {briefing.highlights.length > 0 ? (
+      {!compact && briefing.highlights.length > 0 ? (
         <View style={styles.section}>
           {briefing.highlights.map((highlight, index) => (
             <AppText key={`${highlight.productCode ?? 'highlight'}-${index}`} variant="caption">
@@ -38,7 +42,7 @@ export function MarketBriefingCard({ briefing }: { briefing: MarketBriefingRespo
         </View>
       ) : null}
 
-      {briefing.dataWarnings.length > 0 ? (
+      {!compact && briefing.dataWarnings.length > 0 ? (
         <View style={styles.warning}>
           {briefing.dataWarnings.map((warning) => (
             <AppText key={warning} variant="caption" style={styles.warningText}>
@@ -48,7 +52,7 @@ export function MarketBriefingCard({ briefing }: { briefing: MarketBriefingRespo
         </View>
       ) : null}
 
-      {briefing.recommendedActions.length > 0 ? (
+      {!compact && briefing.recommendedActions.length > 0 ? (
         <View style={styles.section}>
           <AppText variant="caption" muted>
             Recommended survey actions
@@ -67,7 +71,7 @@ export function MarketBriefingCard({ briefing }: { briefing: MarketBriefingRespo
           {sourceSummary}
         </AppText>
       ) : null}
-      <AgentSafetyFlags />
+      {compact ? null : <AgentSafetyFlags />}
     </AppCard>
   );
 }

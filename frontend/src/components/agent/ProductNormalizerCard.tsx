@@ -5,8 +5,10 @@ import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
 import { colors } from '@/src/constants/colors';
+import { radius } from '@/src/constants/radius';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
+import { formatProductMatchConfidence, formatProductMatchTitle } from '@/src/utils/displayLabels';
 
 type ProductNormalizerCardProps = {
   query: string;
@@ -14,16 +16,22 @@ type ProductNormalizerCardProps = {
   loading?: boolean;
   errorMessage?: string;
   onNormalize?: () => void;
+  onReportProduct?: () => void;
+  onViewProduct?: (productCode: string) => void;
 };
 
 export function ProductNormalizerCard({
   errorMessage,
   loading,
   onNormalize,
+  onReportProduct,
+  onViewProduct,
   query,
   result,
 }: ProductNormalizerCardProps) {
   const { t } = useI18n();
+  const canViewProduct = Boolean(result?.standardProductCode && !result.needsHumanReview && onViewProduct);
+
   return (
     <AppCard>
       <View style={styles.header}>
@@ -35,7 +43,12 @@ export function ProductNormalizerCard({
       <AppText variant="caption" muted>
         Reference data
       </AppText>
-      <AppText muted>Search text: {query}</AppText>
+      <View style={styles.queryBox}>
+        <AppText variant="caption" muted>
+          Search text
+        </AppText>
+        <AppText>{query}</AppText>
+      </View>
       {onNormalize ? (
         <AppButton disabled={!query.trim()} loading={loading} onPress={onNormalize} title="Try normalizer" variant="secondary" />
       ) : null}
@@ -48,25 +61,27 @@ export function ProductNormalizerCard({
       ) : null}
       {result ? (
         <View style={styles.result}>
-          <AppText style={styles.resultTitle}>
-            {result.standardProductCode ?? 'Needs review'}
-            {result.variant ? ` / ${result.variant}` : ''}
-          </AppText>
+          <AppText style={styles.resultTitle}>{formatProductMatchTitle(result)}</AppText>
           <AppText variant="caption" muted>
-            confidence: {Math.round(result.matchConfidence * 100)}%
-            {result.needsHumanReview ? ` / ${t('agent.needsHumanReview')}` : ''}
+            {formatProductMatchConfidence(result.matchConfidence)}
+            {result.needsHumanReview ? ` · ${t('agent.needsHumanReview')}` : ''}
           </AppText>
           {result.matchedAliases.length > 0 ? (
             <AppText variant="caption" muted>
-              aliases: {result.matchedAliases.join(', ')}
+              Based on product aliases
             </AppText>
           ) : null}
           <AppText>{result.explanation}</AppText>
-          {result.needsHumanReview ? (
-            <AppText variant="caption" muted>
-              Choose a listed product or submit the report with the raw product name for review.
-            </AppText>
-          ) : null}
+          <View style={styles.actions}>
+            {canViewProduct && result.standardProductCode ? (
+              <AppButton
+                onPress={() => onViewProduct?.(result.standardProductCode!)}
+                title={`View ${result.standardProductName ?? 'product'} prices`}
+                variant="secondary"
+              />
+            ) : null}
+            {onReportProduct ? <AppButton onPress={onReportProduct} title="Report this product" variant="ghost" /> : null}
+          </View>
         </View>
       ) : null}
     </AppCard>
@@ -74,6 +89,10 @@ export function ProductNormalizerCard({
 }
 
 const styles = StyleSheet.create({
+  actions: {
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
   badge: {
     color: colors.primary,
     fontWeight: '800',
@@ -82,6 +101,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  queryBox: {
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radius.md,
+    gap: spacing.xxs,
+    padding: spacing.md,
   },
   result: {
     gap: spacing.xs,

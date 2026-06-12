@@ -1,11 +1,19 @@
 import { describe, expect, it } from '@jest/globals';
 
+import type { ProductNormalizeResponse } from '@/src/api/agentTypes';
 import {
   formatConfidenceLabel,
   formatDataContext,
+  formatMarketLocation,
+  formatMarketTypeLabel,
+  formatProductMatchConfidence,
+  formatProductMatchTitle,
+  formatProductSubtitle,
   formatSourceLabel,
   formatSourceSummary,
   formatSurveyMetadata,
+  formatUpdatedLabel,
+  formatVariantLabel,
   getFairRangeDisplay,
   getPriceCheckDisplayMetrics,
 } from '@/src/utils/displayLabels';
@@ -27,6 +35,7 @@ describe('display labels', () => {
 
   it('formats limited data and survey metadata', () => {
     expect(formatDataContext({ sampleCount: 1 })).toBe('Limited data');
+    expect(formatUpdatedLabel('2026-06-05')).toBe('Updated 2026-06-05');
     expect(
       formatSurveyMetadata({
         surveyDate: '2026-06-05',
@@ -42,6 +51,38 @@ describe('display labels', () => {
     expect(summary).toBe('Limited data · Moderate confidence (58%)');
     expect(summary).not.toContain('쨌');
     expect(summary).not.toContain('횂');
+  });
+
+  it('formats product subtitles and market labels for consumer screens', () => {
+    expect(formatProductSubtitle({ nameUz: 'Pomidor', nameRu: 'Помидор', nameKo: '토마토' })).toBe(
+      'Pomidor · Помидор · 토마토',
+    );
+    expect(
+      formatMarketLocation({
+        code: 'TASHKENT_CHORSU',
+        city: 'Tashkent',
+        district: 'Shaykhontohur',
+        address: null,
+      }),
+    ).toBe('Old City, Tashkent');
+    expect(formatMarketTypeLabel({ marketType: 'ONLINE_RETAIL' })).toBe('Reference data');
+  });
+
+  it('formats product match output without raw variant syntax', () => {
+    const match: ProductNormalizeResponse = {
+      rawProductName: 'pink greenhouse pomidor',
+      standardProductCode: 'TOMATO',
+      standardProductName: 'Tomato',
+      variant: 'PINK_GREENHOUSE',
+      matchConfidence: 0.92,
+      needsHumanReview: false,
+      matchedAliases: ['pomidor'],
+      explanation: 'Matched by alias.',
+    };
+
+    expect(formatVariantLabel('PINK_GREENHOUSE')).toBe('Pink Greenhouse');
+    expect(formatProductMatchTitle(match)).toBe('Matched to Tomato · Pink Greenhouse');
+    expect(formatProductMatchConfidence(match.matchConfidence)).toBe('Confidence: High');
   });
 
   it('formats price check metrics for display', () => {

@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/src/components/common/AppText';
 import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/radius';
-import { formatShortConfidenceLabel } from '@/src/utils/displayLabels';
+import { DISPLAY_SEPARATOR, formatShortConfidenceLabel } from '@/src/utils/displayLabels';
 
 export function ConfidenceBadge({ score }: { score: number }) {
   const percent = Math.round(score * 100);
@@ -16,7 +16,9 @@ export function ConfidenceBadge({ score }: { score: number }) {
   return (
     <View style={[styles.badge, { backgroundColor: background }]}>
       <AppText variant="caption" style={[styles.text, { color: foreground }]}>
-        {label} · {percent}%
+        {label}
+        {DISPLAY_SEPARATOR}
+        {percent}%
       </AppText>
     </View>
   );

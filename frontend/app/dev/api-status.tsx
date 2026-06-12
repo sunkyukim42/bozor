@@ -25,8 +25,8 @@ export default function ApiStatusScreen() {
       <AppCard>
         <StatusRow label={t('apiMode')} value={USE_MOCK_API ? 'mock' : 'real'} />
         <StatusRow label={t('apiBaseUrl')} value={API_BASE_URL} />
-        <StatusRow label="Mock products" value={String(mockProducts.length)} />
-        <StatusRow label="Mock markets" value={String(mockMarkets.length)} />
+        <StatusRow label="Local mock products" value={String(mockProducts.length)} />
+        <StatusRow label="Local mock markets" value={String(mockMarkets.length)} />
         <StatusRow
           label="Products ping"
           value={
@@ -42,7 +42,7 @@ export default function ApiStatusScreen() {
         <AppText variant="sectionTitle">Phase 4</AppText>
         <AppText muted>{t('realApiLater')}</AppText>
         <AppText variant="caption" muted>
-          Mock data is development data only. {MOCK_DATA_NOTICE}
+          Real API mode uses backend seed data after Flyway migration V4. Mock data remains available for offline development. {MOCK_DATA_NOTICE}
         </AppText>
       </AppCard>
       <AppCard>

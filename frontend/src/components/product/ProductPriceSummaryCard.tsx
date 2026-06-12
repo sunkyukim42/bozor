@@ -30,8 +30,36 @@ export function ProductPriceSummaryCard({ compact, summary }: { summary: PriceSu
           {summary.summaryDate}
         </AppText>
       </View>
+      <SummaryMetadata summary={summary} />
       <SourceBreakdown sources={summary.sourceBreakdown} />
     </AppCard>
+  );
+}
+
+function SummaryMetadata({ summary }: { summary: PriceSummaryResponse }) {
+  const details = [
+    summary.surveyDate ? `surveyDate: ${summary.surveyDate}` : null,
+    summary.location ? `location: ${summary.location}` : null,
+    summary.dataSource ? `source: ${summary.dataSource}` : null,
+  ].filter(Boolean);
+
+  if (details.length === 0 && !summary.dataNote) {
+    return null;
+  }
+
+  return (
+    <View style={styles.metadata}>
+      {details.length > 0 ? (
+        <AppText variant="caption" muted>
+          {details.join(' · ')}
+        </AppText>
+      ) : null}
+      {summary.dataNote ? (
+        <AppText variant="caption" muted>
+          {summary.dataNote}
+        </AppText>
+      ) : null}
+    </View>
   );
 }
 
@@ -46,6 +74,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: spacing.md,
+  },
+  metadata: {
+    gap: spacing.xs,
+    marginBottom: spacing.md,
   },
   titleBlock: {
     flex: 1,

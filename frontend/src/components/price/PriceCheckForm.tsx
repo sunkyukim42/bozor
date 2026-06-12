@@ -29,6 +29,7 @@ export function PriceCheckForm({
   const [marketCode, setMarketCode] = useState(defaultMarketCode);
   const [quotedPrice, setQuotedPrice] = useState('22000');
 
+  const selectedProduct = products.find((product) => product.code === productCode);
   const numericPrice = Number(quotedPrice);
   const canSubmit = Boolean(productCode && marketCode && numericPrice > 0);
 
@@ -55,7 +56,14 @@ export function PriceCheckForm({
       <AppButton
         disabled={!canSubmit}
         loading={loading}
-        onPress={() => onSubmit({ productCode, marketCode, quotedPrice: numericPrice, unitCode: 'KG' })}
+        onPress={() =>
+          onSubmit({
+            productCode,
+            marketCode,
+            quotedPrice: numericPrice,
+            unitCode: selectedProduct?.defaultUnit ?? 'KG',
+          })
+        }
         title="가격 확인하기"
       />
     </View>

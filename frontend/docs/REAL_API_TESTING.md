@@ -43,39 +43,17 @@ Default base URL:
 http://localhost:8080
 ```
 
-## 4. Seed Real API Summary Data
+## 4. Verify Phase 4 Seed Data
 
-Fresh databases can have no price summary for a product/market/date. Use the existing admin MVP endpoints to create approved observations and recompute a summary.
-
-Create three approved observations for `TOMATO / TASHKENT_CHORSU / 2026-05-30`:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/admin/price-observations \
-  -H "Content-Type: application/json" \
-  -d '{"productCode":"TOMATO","marketCode":"TASHKENT_CHORSU","sourceCode":"FIELD_SURVEY","observedAt":"2026-05-30T09:00:00+05:00","priceAmount":15000,"currency":"UZS","unitCode":"KG","normalizedPricePerKg":15000,"qualityGrade":"STANDARD","status":"APPROVED","trustScore":0.8,"rawPayload":{"note":"phase 4 real api test data only"}}'
-
-curl -X POST http://localhost:8080/api/v1/admin/price-observations \
-  -H "Content-Type: application/json" \
-  -d '{"productCode":"TOMATO","marketCode":"TASHKENT_CHORSU","sourceCode":"FIELD_SURVEY","observedAt":"2026-05-30T10:00:00+05:00","priceAmount":16000,"currency":"UZS","unitCode":"KG","normalizedPricePerKg":16000,"qualityGrade":"STANDARD","status":"APPROVED","trustScore":0.8,"rawPayload":{"note":"phase 4 real api test data only"}}'
-
-curl -X POST http://localhost:8080/api/v1/admin/price-observations \
-  -H "Content-Type: application/json" \
-  -d '{"productCode":"TOMATO","marketCode":"TASHKENT_CHORSU","sourceCode":"USER_REPORT","observedAt":"2026-05-30T11:00:00+05:00","priceAmount":17000,"currency":"UZS","unitCode":"KG","normalizedPricePerKg":17000,"qualityGrade":"STANDARD","status":"APPROVED","trustScore":0.7,"rawPayload":{"note":"phase 4 real api test data only"}}'
-```
-
-Recompute the summary:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/admin/price-summaries/recompute \
-  -H "Content-Type: application/json" \
-  -d '{"productCode":"TOMATO","marketCode":"TASHKENT_CHORSU","summaryDate":"2026-05-30","summaryGrain":"DAILY"}'
-```
+Flyway migration `V4__seed_local_survey_data.sql` adds the 2026-06-05 Chorsu/Korzinka survey-backed development data. It adds `RICE`, `EGGS`, `VEGETABLE_OIL`, and `BEEF`, plus aliases such as `rice`, `guruch`, `tuxum`, and `mol go'shti`.
 
 Verify:
 
 ```bash
-curl -s "http://localhost:8080/api/v1/prices/summary?productCode=TOMATO&marketCode=TASHKENT_CHORSU"
-curl -s "http://localhost:8080/api/v1/prices/history?productCode=TOMATO&marketCode=TASHKENT_CHORSU"
+curl -s "http://localhost:8080/api/v1/products?query=rice"
+curl -s "http://localhost:8080/api/v1/products?query=tuxum"
+curl -s "http://localhost:8080/api/v1/prices/summary?productCode=RICE&marketCode=TASHKENT_CHORSU&date=2026-06-05"
+curl -s "http://localhost:8080/api/v1/prices/summary?productCode=EGGS&marketCode=TASHKENT_CHORSU&date=2026-06-05"
 curl -s -X POST "http://localhost:8080/api/v1/prices/check" \
   -H "Content-Type: application/json" \
   -d '{"productCode":"TOMATO","marketCode":"TASHKENT_CHORSU","quotedPrice":22000,"unitCode":"KG"}'
@@ -116,8 +94,8 @@ http://localhost:19009
 Confirm:
 
 - Home loads products and markets from the backend.
-- Search `tomato` and `pomidor` return `TOMATO`.
-- Product Detail for `TOMATO` shows summary/history when seeded.
+- Search `tomato`, `pomidor`, `rice`, and `tuxum` return the expected products.
+- Product Detail for survey-backed products shows summary/history after backend migrations.
 - Price Check for `TOMATO / TASHKENT_CHORSU / 22000` shows the backend verdict.
 - Report Price returns `PENDING`.
 - Dev API Status shows `real`, API base URL, and products ping `ok`.
@@ -164,5 +142,5 @@ npm run test:integration
 - `NETWORK_ERROR`: check backend is running, base URL, LAN IP, and firewall.
 - `REQUEST_TIMEOUT`: check backend startup, database, or slow network.
 - CORS error on Web: set `CORS_ALLOWED_ORIGINS=http://localhost:19009,http://localhost:19006,http://localhost:8081,http://localhost:3000,http://localhost:5173` before starting backend.
-- Empty Product Detail summary: seed observations and run summary recompute.
+- Empty Product Detail summary: confirm Flyway migrated through version 4 and the selected product/market/date has seed data.
 - Expo Go cannot connect: use the PC LAN IP for backend and consider `npx expo start --tunnel`.

@@ -39,6 +39,10 @@ export function adaptPriceSummary(value: unknown): PriceSummaryResponse {
     confidenceScore: asNumber(record.confidenceScore),
     sourceBreakdown: normalizeSourceBreakdown(record.sourceBreakdown),
     computedAt: asTimestampString(record.computedAt),
+    surveyDate: optionalString(record.surveyDate),
+    location: optionalString(record.location),
+    dataSource: optionalString(record.dataSource),
+    dataNote: optionalString(record.dataNote),
   };
 }
 
@@ -91,7 +95,16 @@ export function adaptPriceCheck(
     confidenceScore: asNumber(record.confidenceScore, summary?.confidenceScore ?? 0),
     sampleCount: asNumber(record.sampleCount, summary?.sampleCount ?? 0),
     sourceBreakdown: normalizeSourceBreakdown(record.sourceBreakdown ?? summary?.sourceBreakdown),
+    surveyDate: optionalString(record.surveyDate) ?? summary?.surveyDate,
+    location: optionalString(record.location) ?? summary?.location,
+    dataSource: optionalString(record.dataSource) ?? summary?.dataSource,
+    dataNote: optionalString(record.dataNote) ?? summary?.dataNote,
   };
+}
+
+function optionalString(value: unknown): string | undefined {
+  const text = asString(value).trim();
+  return text.length > 0 ? text : undefined;
 }
 
 function adaptSummaryGrain(value: unknown): SummaryGrain {

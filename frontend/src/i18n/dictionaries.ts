@@ -59,7 +59,7 @@ const en: Dictionary = {
   apiMode: 'API mode',
   difyNotConnected: 'Dify: not connected',
   telegramNotConnected: 'Telegram: not connected',
-  realApiLater: 'Real Spring API connection is planned for phase 4.',
+  realApiLater: 'Real Spring API mode is available when EXPO_PUBLIC_USE_MOCK_API=false.',
   aiPlaceholder: 'AI price insight assistant coming later',
 };
 
@@ -117,7 +117,7 @@ const ko: Dictionary = {
   apiStatus: 'API 상태',
   apiBaseUrl: 'API Base URL',
   apiMode: 'API mode',
-  realApiLater: '4단계에서 실제 Spring API 연결 예정입니다.',
+  realApiLater: 'Real Spring API mode is available when EXPO_PUBLIC_USE_MOCK_API=false.',
 };
 
 const uz: Dictionary = {

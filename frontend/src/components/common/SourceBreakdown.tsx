@@ -10,7 +10,9 @@ const sourceLabels: Record<string, string> = {
   USER_REPORT: 'User reports',
   STAT_UZ: 'Stat.uz',
   KORZINKA: 'Korzinka',
+  KORZINKA_REFERENCE: 'Korzinka reference',
   MAKRO: 'Makro',
+  DEVELOPMENT_DEMO: 'Development demo',
 };
 
 export function SourceBreakdown({ sources }: { sources: SourceBreakdownType }) {

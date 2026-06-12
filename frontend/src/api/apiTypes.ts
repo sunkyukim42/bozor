@@ -77,6 +77,10 @@ export type PriceSummaryResponse = {
   confidenceScore: number;
   sourceBreakdown: SourceBreakdown;
   computedAt: string;
+  surveyDate?: string;
+  location?: string;
+  dataSource?: string;
+  dataNote?: string;
 };
 
 export type PriceHistoryItem = PriceSummaryResponse;
@@ -114,6 +118,10 @@ export type PriceCheckResponse = {
   confidenceScore: number;
   sampleCount: number;
   sourceBreakdown: SourceBreakdown;
+  surveyDate?: string;
+  location?: string;
+  dataSource?: string;
+  dataNote?: string;
 };
 
 export type PriceReportCreateRequest = {

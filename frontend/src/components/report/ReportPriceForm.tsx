@@ -33,6 +33,7 @@ export function ReportPriceForm({
   const [rawProductName, setRawProductName] = useState('');
   const [submittedPrice, setSubmittedPrice] = useState('16000');
 
+  const selectedProduct = products.find((product) => product.code === productCode);
   const numericPrice = Number(submittedPrice);
   const canSubmit = Boolean((productCode || rawProductName.trim()) && marketCode && numericPrice > 0);
 
@@ -79,7 +80,7 @@ export function ReportPriceForm({
             marketCode,
             rawProductName: rawProductName || undefined,
             submittedPrice: numericPrice,
-            submittedUnit: 'KG',
+            submittedUnit: selectedProduct?.defaultUnit ?? 'KG',
             photoUrl: null,
             latitude: null,
             longitude: null,

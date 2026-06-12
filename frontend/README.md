@@ -1,6 +1,6 @@
 # BozorCheck AI Frontend
 
-React Native / Expo / TypeScript frontend for BozorCheck AI. This implementation follows the phase 2.5 design documents in `../docs/design/` and uses mock data only.
+React Native / Expo / TypeScript frontend for BozorCheck AI. This implementation follows the phase 2.5 design documents in `../docs/design/` and supports both local mock mode and real Spring API mode.
 
 ## Install
 
@@ -56,17 +56,19 @@ See `docs/REAL_API_TESTING.md` for backend seed data, CORS, LAN IP, and integrat
 
 ## Screens
 
-- Home: selected market, mock API status, five key price cards, CTAs, recent searches, confidence summary.
+- Home: selected market, API status, five key price cards, CTAs, recent searches, confidence summary.
 - Search: product search by code, Korean, English, Uzbek, Russian, and aliases.
 - Product Detail: fair price range, chart, confidence, sample count, source breakdown.
 - Price Check: deterministic backend verdict in real mode, mock verdict in mock mode.
-- Report Price: mock report creation with `PENDING` result.
+- Report Price: report creation with `PENDING` result.
 - Settings: locale, default market, API status, recent search reset.
-- Dev API Status: mock mode, base URL, counts, field survey mock metadata, Dify and Telegram not connected.
+- Dev API Status: current API mode, base URL, counts, field survey metadata, Dify and Telegram not connected.
 
-## Mock API
+## Mock And Real API Data
 
 The mock API includes the original 10 MVP products plus `RICE`, `EGGS`, `VEGETABLE_OIL`, and `BEEF`. It is field survey mock data / development demo data only and must not be presented as guaranteed live market pricing.
+
+Real Spring API mode can use the same 2026-06-05 survey-backed dataset after backend Flyway migrations run through `V4__seed_local_survey_data.sql`.
 
 Survey-backed demo data:
 
@@ -100,6 +102,7 @@ Price verdict logic mirrors the Spring backend:
 ## Not Connected Yet
 
 - Real Spring API integration is available when `EXPO_PUBLIC_USE_MOCK_API=false`.
+- Backend survey seed data is available after the Spring Boot database migrations complete.
 - Dify is not connected.
 - Telegram is not connected.
 - No OpenAI/LLM API is called.

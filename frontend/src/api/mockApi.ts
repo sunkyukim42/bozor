@@ -97,6 +97,10 @@ export async function checkMockPrice(request: PriceCheckRequest): Promise<PriceC
     confidenceScore: summary.confidenceScore,
     sampleCount: summary.sampleCount,
     sourceBreakdown: summary.sourceBreakdown,
+    surveyDate: summary.surveyDate,
+    location: summary.location,
+    dataSource: summary.dataSource,
+    dataNote: summary.dataNote,
   };
 }
 

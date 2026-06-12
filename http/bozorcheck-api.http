@@ -38,6 +38,77 @@ Content-Type: application/json
   "unitCode": "KG"
 }
 
+### Agent Product Normalize
+POST {{baseUrl}}/api/v1/agent/product-normalize
+Content-Type: application/json
+
+{
+  "rawProductName": "pink greenhouse pomidor",
+  "locale": "en"
+}
+
+### Agent Product Normalize Unknown
+POST {{baseUrl}}/api/v1/agent/product-normalize
+Content-Type: application/json
+
+{
+  "rawProductName": "unknown local vegetable",
+  "locale": "en"
+}
+
+### Agent Product Normalize Sunflower Oil
+POST {{baseUrl}}/api/v1/agent/product-normalize
+Content-Type: application/json
+
+{
+  "rawProductName": "sunflower oil",
+  "locale": "en"
+}
+
+### Agent Report Inspect
+POST {{baseUrl}}/api/v1/agent/report-inspect
+Content-Type: application/json
+
+{
+  "productCode": "RICE",
+  "marketCode": "TASHKENT_CHORSU",
+  "submittedPrice": 18000,
+  "submittedUnit": "KG",
+  "locale": "en"
+}
+
+### Agent Price Insight
+POST {{baseUrl}}/api/v1/agent/price-insight
+Content-Type: application/json
+
+{
+  "productCode": "RICE",
+  "marketCode": "TASHKENT_CHORSU",
+  "quotedPrice": 18000,
+  "unitCode": "KG",
+  "includeOptionalPhrase": true
+}
+
+### Agent Market Briefing
+POST {{baseUrl}}/api/v1/agent/market-briefing
+Content-Type: application/json
+
+{
+  "marketCode": "TASHKENT_CHORSU",
+  "summaryDate": "2026-06-05"
+}
+
+### Agent Field Survey Plan
+# Expected response: todaySurveyTargets is an array, recommendedPlan is a string,
+# recommendedActions is the structured action array, and surveyTargets is kept for compatibility.
+POST {{baseUrl}}/api/v1/agent/field-survey-plan
+Content-Type: application/json
+
+{
+  "marketCode": "TASHKENT_CHORSU",
+  "summaryDate": "2026-06-05"
+}
+
 ### User Price Report
 POST {{baseUrl}}/api/v1/reports
 Content-Type: application/json

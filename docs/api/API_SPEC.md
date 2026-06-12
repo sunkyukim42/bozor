@@ -32,6 +32,8 @@ All errors use:
 Admin APIs under `/api/v1/admin/**` are MVP development endpoints and currently have no authentication. Authentication is required before production use.
 
 Dify integration is intentionally not implemented in this phase. It is planned for a later AI integration phase.
+The Phase 5A agent endpoints use deterministic mock providers only. They do not call Dify, OpenAI,
+Telegram, or any external service, and they do not auto-approve user reports.
 
 ## Public APIs
 
@@ -103,6 +105,263 @@ Returns summaries ordered by `summaryDate` ascending. Without `from` and `to`, t
 
 Returns deterministic verdict `CHEAP`, `FAIR`, `EXPENSIVE`, or `VERY_EXPENSIVE`. No AI or Dify call is made.
 The response also includes `sampleCount`, `sourceBreakdown`, and optional survey metadata when available.
+
+### `POST /api/v1/agent/product-normalize`
+
+Normalizes a raw product phrase against active backend products and aliases. The mock provider ranks exact
+alias/name/code matches above partial token matches.
+
+Request:
+
+```json
+{
+  "rawProductName": "pink greenhouse pomidor",
+  "locale": "en"
+}
+```
+
+Success response:
+
+```json
+{
+  "rawProductName": "pink greenhouse pomidor",
+  "standardProductCode": "TOMATO",
+  "standardProductName": "Tomato",
+  "variant": "PINK_GREENHOUSE",
+  "matchConfidence": 0.88,
+  "needsHumanReview": false,
+  "matchedAliases": ["pink tomato", "greenhouse tomato", "pomidor"],
+  "explanation": "Matched backend product aliases or meaningful name tokens."
+}
+```
+
+Unknown product response:
+
+```json
+{
+  "rawProductName": "unknown local vegetable",
+  "standardProductCode": null,
+  "standardProductName": null,
+  "variant": "UNKNOWN",
+  "matchConfidence": 0.20,
+  "needsHumanReview": true,
+  "matchedAliases": [],
+  "explanation": "No reliable product alias match was found in backend catalog data."
+}
+```
+
+### `POST /api/v1/agent/report-inspect`
+
+Inspects a submitted report candidate without creating or updating any report row. The mock provider only
+suggests `PENDING`, `FLAGGED`, `REVIEW_REQUIRED`, or `REJECT_CANDIDATE`; it never suggests `APPROVED`.
+
+Request:
+
+```json
+{
+  "productCode": "RICE",
+  "marketCode": "TASHKENT_CHORSU",
+  "submittedPrice": 18000,
+  "submittedUnit": "KG",
+  "locale": "en"
+}
+```
+
+Success response:
+
+```json
+{
+  "normalizedProductCode": "RICE",
+  "riskLevel": "MEDIUM",
+  "statusSuggestion": "REVIEW_REQUIRED",
+  "needsHumanReview": true,
+  "anomalyReasons": ["Submitted price is above backend fair high."],
+  "reviewNote": "Review manually because the submitted value is outside the fair range.",
+  "userMessage": "Thanks for the report. It needs a short review before it can help the price data.",
+  "sourceSummary": {
+    "productCode": "RICE",
+    "marketCode": "TASHKENT_CHORSU",
+    "summaryDate": "2026-06-05",
+    "sampleCount": 1,
+    "confidenceScore": 0.58,
+    "sourceBreakdown": {
+      "FIELD_SURVEY": 1
+    },
+    "surveyDate": "2026-06-05",
+    "location": "Chorsu Bazaar and Korzinka, Tashkent",
+    "dataSource": "FIELD_SURVEY",
+    "dataNote": "Field survey/reference data for real API development; not live pricing."
+  },
+  "safetyFlags": {
+    "usedOnlyBackendPrices": true,
+    "noSellerBlaming": true,
+    "noAiGeneratedFairPrice": true,
+    "difyConnected": false,
+    "noAutoApproval": true
+  }
+}
+```
+
+### `POST /api/v1/agent/price-insight`
+
+Explains an existing backend price verdict. Fair range and verdict are copied from `POST /api/v1/prices/check`;
+the agent does not generate prices.
+
+Request. `includeOptionalPhrase` is the primary contract field; `includeBargainPhrase` is still accepted as a
+backward-compatible alias.
+
+```json
+{
+  "productCode": "RICE",
+  "marketCode": "TASHKENT_CHORSU",
+  "quotedPrice": 18000,
+  "unitCode": "KG",
+  "includeOptionalPhrase": true
+}
+```
+
+Success response:
+
+```json
+{
+  "productCode": "RICE",
+  "marketCode": "TASHKENT_CHORSU",
+  "quotedPrice": 18000,
+  "unitCode": "KG",
+  "fairLow": 14300,
+  "fairMid": 15000,
+  "fairHigh": 15800,
+  "verdict": "EXPENSIVE",
+  "recommendedTargetPrice": 15000,
+  "overFairHighPercent": 13.92,
+  "insightText": "Backend price check returned EXPENSIVE for RICE. The fair range is 14300.00-15800.00 KG based on stored BozorCheck summaries.",
+  "confidenceExplanation": "Confidence is 0.580 from 1 backend sample(s); the agent did not generate a fair price.",
+  "sourceSummary": {
+    "productCode": "RICE",
+    "marketCode": "TASHKENT_CHORSU",
+    "sampleCount": 1,
+    "confidenceScore": 0.58,
+    "sourceBreakdown": {
+      "FIELD_SURVEY": 1
+    },
+    "surveyDate": "2026-06-05",
+    "location": "Chorsu Bazaar and Korzinka, Tashkent",
+    "dataSource": "FIELD_SURVEY",
+    "dataNote": "Field survey/reference data for real API development; not live pricing."
+  },
+  "recommendedAction": {
+    "productCode": "RICE",
+    "priority": "MEDIUM",
+    "reason": "Above backend fair high.",
+    "message": "Consider comparing another stall or market before buying."
+  },
+  "bargainPhrase": "Could you offer a price closer to 15000.00 KG?",
+  "safetyFlags": {
+    "usedOnlyBackendPrices": true,
+    "noSellerBlaming": true,
+    "noAiGeneratedFairPrice": true,
+    "difyConnected": false,
+    "noAutoApproval": true
+  }
+}
+```
+
+### `POST /api/v1/agent/market-briefing`
+
+Summarizes market/date price summaries using stored backend data.
+
+Request. `summaryDate` is the primary contract field; `date` is accepted as a backward-compatible alias.
+
+```json
+{
+  "marketCode": "TASHKENT_CHORSU",
+  "summaryDate": "2026-06-05"
+}
+```
+
+Success response:
+
+```json
+{
+  "marketCode": "TASHKENT_CHORSU",
+  "marketName": "Chorsu Bazaar",
+  "summaryDate": "2026-06-05",
+  "briefingTitle": "2026-06-05 Chorsu Bazaar price briefing",
+  "summaryText": "Chorsu Bazaar has 10 backend price summaries for this date. The briefing uses stored survey/reference data only.",
+  "highlights": [
+    "APPLE fair midpoint is 40000.00 at Chorsu Bazaar."
+  ],
+  "dataWarnings": [
+    "Field survey/reference data has low sample counts and development-level confidence."
+  ],
+  "recommendedActions": [
+    {
+      "productCode": "APPLE",
+      "priority": "HIGH",
+      "reason": "Low sample count or development confidence.",
+      "message": "Collect additional field observations for APPLE."
+    }
+  ]
+}
+```
+
+### `POST /api/v1/agent/field-survey-plan`
+
+Builds deterministic survey targets from summary coverage, sample count, and confidence. Missing summaries,
+`sampleCount < 3`, or low confidence increase priority.
+
+Request. `summaryDate` is the primary contract field; `date` is accepted as a backward-compatible alias.
+
+```json
+{
+  "marketCode": "TASHKENT_CHORSU",
+  "summaryDate": "2026-06-05"
+}
+```
+
+Success response:
+
+```json
+{
+  "marketCode": "TASHKENT_CHORSU",
+  "summaryDate": "2026-06-05",
+  "todaySurveyTargets": [
+    {
+      "productCode": "RICE",
+      "priority": "HIGH",
+      "reason": "Very low sample count or confidence.",
+      "message": "Collect at least three fresh observations for RICE."
+    }
+  ],
+  "recommendedPlan": "Collect at least 3 observations for RICE at Chorsu Bazaar. Prioritize products with low sample count or low confidence score.",
+  "surveyTargets": [
+    {
+      "productCode": "RICE",
+      "priority": "HIGH",
+      "reason": "Very low sample count or confidence.",
+      "message": "Collect at least three fresh observations for RICE."
+    }
+  ],
+  "recommendedActions": [
+    {
+      "productCode": "RICE",
+      "priority": "HIGH",
+      "reason": "Very low sample count or confidence.",
+      "message": "Prioritize RICE during the next field survey."
+    }
+  ],
+  "dataWarnings": [
+    "Survey plan is based on backend summary coverage and confidence only."
+  ]
+}
+```
+
+`todaySurveyTargets` and `recommendedPlan` are the primary contract fields. `surveyTargets` is retained as a
+backward-compatible alias for `todaySurveyTargets`; `recommendedActions` retains the structured action list.
+
+Phase 5A provider swap note: future real Dify providers can implement the same provider interfaces, but secrets
+and external calls are intentionally absent from this backend phase. Any future Dify API key must be managed only
+as a backend secret and must not be committed to source, docs, or `.http` files.
 
 ### `POST /api/v1/reports`
 

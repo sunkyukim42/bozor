@@ -6,6 +6,7 @@ import { AppButton } from '@/src/components/common/AppButton';
 import { AppInput } from '@/src/components/common/AppInput';
 import { AppSelect } from '@/src/components/common/AppSelect';
 import { AppText } from '@/src/components/common/AppText';
+import { UnitSelector } from '@/src/components/common/UnitSelector';
 import { MarketSelector } from '@/src/components/market/MarketSelector';
 import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/radius';
@@ -32,12 +33,16 @@ export function ReportPriceForm({
   onSubmit,
   products,
 }: ReportPriceFormProps) {
-  const [productCode, setProductCode] = useState(defaultProductCode ?? products[0]?.code ?? 'TOMATO');
+  const initialProductCode = defaultProductCode ?? products[0]?.code ?? 'TOMATO';
+  const initialProduct = products.find((product) => product.code === initialProductCode);
+  const [productCode, setProductCode] = useState(initialProductCode);
   const [marketCode, setMarketCode] = useState(defaultMarketCode);
   const [rawProductName, setRawProductName] = useState('');
   const [submittedPrice, setSubmittedPrice] = useState('16000');
 
   const selectedProduct = products.find((product) => product.code === productCode);
+  const unitOptions = buildUnitOptions(selectedProduct?.defaultUnit);
+  const [unitCode, setUnitCode] = useState(initialProduct?.defaultUnit ?? 'KG');
   const numericPrice = Number(submittedPrice);
   const canSubmit = Boolean((productCode || rawProductName.trim()) && marketCode && numericPrice > 0);
   const buildRequest = (): PriceReportCreateRequest => ({
@@ -45,17 +50,22 @@ export function ReportPriceForm({
     marketCode,
     rawProductName: rawProductName || undefined,
     submittedPrice: numericPrice,
-    submittedUnit: selectedProduct?.defaultUnit ?? 'KG',
+    submittedUnit: unitCode,
     photoUrl: null,
     latitude: null,
     longitude: null,
   });
 
+  function handleProductSelect(nextProductCode: string) {
+    setProductCode(nextProductCode);
+    setUnitCode(products.find((product) => product.code === nextProductCode)?.defaultUnit ?? 'KG');
+  }
+
   return (
     <View style={styles.wrap}>
       <AppSelect
         label="Product"
-        onSelect={setProductCode}
+        onSelect={handleProductSelect}
         options={products.map((product) => ({
           label: product.nameEn,
           value: product.code,
@@ -69,7 +79,8 @@ export function ReportPriceForm({
         placeholder="Local product name"
         value={rawProductName}
       />
-      <MarketSelector markets={markets} onSelect={setMarketCode} selectedMarketCode={marketCode} />
+      <MarketSelector markets={markets} onSelect={setMarketCode} selectedValue={marketCode} />
+      <UnitSelector onSelect={setUnitCode} selectedUnit={unitCode} units={unitOptions} />
       <AppInput
         keyboardType="numeric"
         label="Submitted price"
@@ -79,11 +90,11 @@ export function ReportPriceForm({
       />
       <View style={styles.placeholder}>
         <AppText variant="caption" style={styles.placeholderText}>
-          사진 첨부 예정
+          Photo upload is planned
         </AppText>
       </View>
       <AppText variant="caption" muted>
-        이번 단계에서는 실제 카메라, 위치 권한, 파일 업로드를 사용하지 않습니다.
+        This step does not request camera, location, or file upload permissions.
       </AppText>
       {onInspect ? (
         <AppButton
@@ -94,14 +105,13 @@ export function ReportPriceForm({
           variant="secondary"
         />
       ) : null}
-      <AppButton
-        disabled={!canSubmit}
-        loading={loading}
-        onPress={() => onSubmit(buildRequest())}
-        title="제보 제출하기"
-      />
+      <AppButton disabled={!canSubmit} loading={loading} onPress={() => onSubmit(buildRequest())} title="Submit report" />
     </View>
   );
+}
+
+function buildUnitOptions(defaultUnit = 'KG'): string[] {
+  return Array.from(new Set([defaultUnit, 'KG', 'PCS_10', 'LITER', 'BUNDLE', 'PCS']));
 }
 
 const styles = StyleSheet.create({
@@ -111,12 +121,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.button,
     borderWidth: 1,
-    minHeight: 52,
     justifyContent: 'center',
+    minHeight: 52,
   },
   placeholderText: {
     color: colors.textSecondary,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   wrap: {
     gap: spacing.lg,

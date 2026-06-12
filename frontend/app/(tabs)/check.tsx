@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 
+import { getFriendlyErrorMessage } from '@/src/api/apiErrors';
 import { AgentInsightCard } from '@/src/components/agent/AgentInsightCard';
 import { AppText } from '@/src/components/common/AppText';
 import { ErrorState } from '@/src/components/common/ErrorState';
@@ -8,18 +9,17 @@ import { LoadingState } from '@/src/components/common/LoadingState';
 import { Screen } from '@/src/components/common/Screen';
 import { PriceCheckForm } from '@/src/components/price/PriceCheckForm';
 import { PriceCheckResultCard } from '@/src/components/price/PriceCheckResultCard';
-import { getFriendlyErrorMessage } from '@/src/api/apiErrors';
 import { useI18n } from '@/src/hooks/useI18n';
+import { useSelectedMarket } from '@/src/hooks/useMarketPreference';
 import { useMarkets } from '@/src/hooks/useMarkets';
 import { usePriceCheck } from '@/src/hooks/usePriceCheck';
 import { usePriceInsight } from '@/src/hooks/usePriceInsight';
 import { useProducts } from '@/src/hooks/useProducts';
-import { useAppSettingsStore } from '@/src/stores/appSettingsStore';
 
 export default function CheckScreen() {
   const params = useLocalSearchParams<{ productCode?: string }>();
   const { locale, t } = useI18n();
-  const selectedMarketCode = useAppSettingsStore((state) => state.selectedMarketCode);
+  const marketCode = useSelectedMarket();
   const products = useProducts();
   const markets = useMarkets();
   const checkMutation = usePriceCheck();
@@ -54,10 +54,10 @@ export default function CheckScreen() {
   return (
     <Screen>
       <AppText variant="title">{t('checkPrice')}</AppText>
-      <AppText muted>데이터 기반 가격 판정입니다. AI 문장 생성은 이번 단계에 포함하지 않습니다.</AppText>
+      <AppText muted>Backend price data remains the source of truth. Agent text is explanatory only.</AppText>
       <PriceCheckForm
         key={params.productCode ?? 'manual-check'}
-        defaultMarketCode={selectedMarketCode}
+        defaultMarketCode={marketCode}
         defaultProductCode={params.productCode}
         loading={checkMutation.isPending}
         markets={markets.data}
@@ -67,14 +67,9 @@ export default function CheckScreen() {
       {checkMutation.error ? <ErrorState message={getFriendlyErrorMessage(checkMutation.error)} /> : null}
       {checkMutation.data ? <PriceCheckResultCard result={checkMutation.data} /> : null}
       {priceInsightPending ? <LoadingState /> : null}
-      {priceInsightError ? (
-        <ErrorState message={getFriendlyErrorMessage(priceInsightError)} />
-      ) : null}
+      {priceInsightError ? <ErrorState message={getFriendlyErrorMessage(priceInsightError)} /> : null}
       {priceInsightData ? (
-        <AgentInsightCard
-          insight={priceInsightData}
-          priceCheckVerdict={checkMutation.data?.verdict}
-        />
+        <AgentInsightCard insight={priceInsightData} priceCheckVerdict={checkMutation.data?.verdict} />
       ) : null}
     </Screen>
   );

@@ -29,11 +29,11 @@ export function ProductNormalizerCard({
       <View style={styles.header}>
         <AppText variant="sectionTitle">{t('agent.productNormalize.title')}</AppText>
         <AppText variant="caption" style={styles.badge}>
-          Agent
+          Product match
         </AppText>
       </View>
       <AppText variant="caption" muted>
-        {t('agent.mockNotice')} {t('agent.difyNotConnected')}
+        Reference data
       </AppText>
       <AppText muted>Search text: {query}</AppText>
       {onNormalize ? (

@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
-import { API_BASE_URL, USE_MOCK_API } from '@/src/api/apiClient';
 import type { Locale } from '@/src/i18n/types';
 import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
@@ -11,11 +10,10 @@ import { ErrorState } from '@/src/components/common/ErrorState';
 import { LoadingState } from '@/src/components/common/LoadingState';
 import { Screen } from '@/src/components/common/Screen';
 import { MarketSelector } from '@/src/components/market/MarketSelector';
-import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
 import { useMarkets } from '@/src/hooks/useMarkets';
+import { useSelectedMarket, useSetSelectedMarket } from '@/src/hooks/useMarketPreference';
 import { routes } from '@/src/navigation/routes';
-import { useAppSettingsStore } from '@/src/stores/appSettingsStore';
 import { useRecentSearchStore } from '@/src/stores/recentSearchStore';
 
 const locales: Locale[] = ['ko', 'en', 'uz', 'ru'];
@@ -24,20 +22,24 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { locale, setLocale, t } = useI18n();
   const markets = useMarkets();
-  const selectedMarketCode = useAppSettingsStore((state) => state.selectedMarketCode);
-  const setSelectedMarketCode = useAppSettingsStore((state) => state.setSelectedMarketCode);
+  const marketCode = useSelectedMarket();
+  const setMarketCode = useSetSelectedMarket();
   const clearRecentSearches = useRecentSearchStore((state) => state.clearRecentSearches);
 
   if (markets.isLoading) {
     return <LoadingState />;
   }
   if (markets.error || !markets.data) {
-    return <ErrorState message="설정을 불러오지 못했습니다." />;
+    return <ErrorState message="We could not load settings. Please try again." />;
   }
 
   return (
     <Screen>
       <AppText variant="title">{t('settings')}</AppText>
+      <AppCard>
+        <AppText variant="sectionTitle">{t('appName')}</AppText>
+        <AppText muted>Fair bazaar price transparency for Uzbekistan.</AppText>
+      </AppCard>
       <AppCard>
         <AppSelect
           label={t('language')}
@@ -50,47 +52,32 @@ export default function SettingsScreen() {
         <MarketSelector
           label={t('defaultMarket')}
           markets={markets.data}
-          onSelect={setSelectedMarketCode}
-          selectedMarketCode={selectedMarketCode}
+          onSelect={setMarketCode}
+          selectedValue={marketCode}
         />
       </AppCard>
       <AppCard>
-        <AppText variant="sectionTitle">{t('apiStatus')}</AppText>
-        <View style={styles.statusRows}>
-          <StatusRow label="Mock API" value={String(USE_MOCK_API)} />
-          <StatusRow label={t('apiBaseUrl')} value={API_BASE_URL} />
+        <AppText variant="sectionTitle">Price alerts</AppText>
+        <AppText muted>Alerts are planned for a later phase.</AppText>
+      </AppCard>
+      <AppCard>
+        <AppText variant="sectionTitle">Privacy</AppText>
+        <AppText muted>Camera, location, and upload permissions are not requested in this step.</AppText>
+      </AppCard>
+      <AppCard>
+        <AppText variant="sectionTitle">How prices are collected</AppText>
+        <AppText muted>Prices are based on field survey data, reference data, and reports that stay under review.</AppText>
+      </AppCard>
+      <AppCard>
+        <AppText variant="sectionTitle">Developer Tools</AppText>
+        <View>
+          <AppButton onPress={() => router.push(routes.apiStatus)} title={t('apiStatus')} />
+        </View>
+        <View>
+          <AppButton onPress={() => router.push(routes.agentLab)} title="Dev Agent Lab" variant="secondary" />
         </View>
       </AppCard>
       <AppButton onPress={clearRecentSearches} title={t('clearRecentSearches')} variant="secondary" />
-      <AppButton onPress={() => router.push(routes.apiStatus)} title={t('apiStatus')} />
-      <AppButton onPress={() => router.push(routes.agentLab)} title="Dev Agent Lab" variant="secondary" />
     </Screen>
   );
 }
-
-function StatusRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.statusRow}>
-      <AppText muted>{label}</AppText>
-      <AppText style={styles.statusValue}>{value}</AppText>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  statusRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing.md,
-    justifyContent: 'space-between',
-  },
-  statusRows: {
-    gap: spacing.sm,
-    marginTop: spacing.md,
-  },
-  statusValue: {
-    flex: 1,
-    fontWeight: '800',
-    textAlign: 'right',
-  },
-});

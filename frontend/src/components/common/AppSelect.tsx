@@ -1,8 +1,8 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/src/components/common/AppText';
+import { Chip } from '@/src/components/common/Chip';
 import { colors } from '@/src/constants/colors';
-import { radius } from '@/src/constants/radius';
 import { spacing } from '@/src/constants/spacing';
 
 export type SelectOption = {
@@ -29,20 +29,16 @@ export function AppSelect({ label, onSelect, options, selectedValue }: AppSelect
           {options.map((option) => {
             const selected = option.value === selectedValue;
             return (
-              <Pressable
-                key={option.value}
-                onPress={() => onSelect(option.value)}
-                style={[styles.option, selected && styles.selectedOption]}
-              >
+              <Chip key={option.value} onPress={() => onSelect(option.value)} selected={selected}>
                 <AppText variant="caption" style={selected && styles.selectedText}>
                   {option.label}
                 </AppText>
                 {option.caption ? (
-                  <AppText variant="caption" muted style={selected && styles.selectedText}>
+                  <AppText variant="caption" muted style={selected && styles.selectedCaption}>
                     {option.caption}
                   </AppText>
                 ) : null}
-              </Pressable>
+              </Chip>
             );
           })}
         </View>
@@ -53,28 +49,17 @@ export function AppSelect({ label, onSelect, options, selectedValue }: AppSelect
 
 const styles = StyleSheet.create({
   label: {
-    fontWeight: '800',
-  },
-  option: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    gap: 2,
-    minHeight: 44,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    fontWeight: '700',
   },
   options: {
     flexDirection: 'row',
     gap: spacing.sm,
   },
-  selectedOption: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+  selectedCaption: {
+    color: colors.primaryLight,
   },
   selectedText: {
-    color: '#FFF',
+    color: colors.white,
   },
   wrap: {
     gap: spacing.sm,

@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/radius';
+import { shadows } from '@/src/constants/shadows';
 import { spacing } from '@/src/constants/spacing';
 
 export function AppCard({ children, style }: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
@@ -16,8 +17,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.card,
     borderWidth: 1,
-    elevation: 1,
     padding: spacing.lg,
-    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+    ...shadows.card,
   },
 });

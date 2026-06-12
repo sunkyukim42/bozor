@@ -1,9 +1,12 @@
+import { SymbolView } from 'expo-symbols';
+import type { SymbolViewProps } from 'expo-symbols';
 import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
-import { Text } from 'react-native';
 
 import { colors } from '@/src/constants/colors';
 import { useI18n } from '@/src/hooks/useI18n';
+
+type TabIconName = SymbolViewProps['name'];
 
 export default function TabLayout() {
   const { t } = useI18n();
@@ -18,9 +21,9 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
-          height: 64,
-          paddingBottom: 8,
-          paddingTop: 6,
+          height: 72,
+          paddingBottom: 10,
+          paddingTop: 8,
         },
       }}
     >
@@ -28,41 +31,49 @@ export default function TabLayout() {
         name="home"
         options={{
           title: t('home'),
-          tabBarIcon: ({ color }) => <TabLetter color={color} label="H" />,
+          tabBarIcon: ({ color }) => <TabIcon color={color} name={{ ios: 'house.fill', android: 'home', web: 'home' }} />,
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
           title: t('search'),
-          tabBarIcon: ({ color }) => <TabLetter color={color} label="S" />,
+          tabBarIcon: ({ color }) => (
+            <TabIcon color={color} name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }} />
+          ),
         }}
       />
       <Tabs.Screen
         name="check"
         options={{
           title: t('check'),
-          tabBarIcon: ({ color }) => <TabLetter color={color} label="C" />,
+          tabBarIcon: ({ color }) => (
+            <TabIcon color={color} name={{ ios: 'checkmark.seal.fill', android: 'price_check', web: 'price_check' }} />
+          ),
         }}
       />
       <Tabs.Screen
         name="report"
         options={{
           title: t('report'),
-          tabBarIcon: ({ color }) => <TabLetter color={color} label="R" />,
+          tabBarIcon: ({ color }) => (
+            <TabIcon color={color} name={{ ios: 'square.and.pencil', android: 'edit', web: 'edit' }} />
+          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: t('settings'),
-          tabBarIcon: ({ color }) => <TabLetter color={color} label="G" />,
+          tabBarIcon: ({ color }) => (
+            <TabIcon color={color} name={{ ios: 'gearshape.fill', android: 'settings', web: 'settings' }} />
+          ),
         }}
       />
     </Tabs>
   );
 }
 
-function TabLetter({ color, label }: { color: ColorValue; label: string }) {
-  return <Text style={{ color, fontSize: 18, fontWeight: '900' }}>{label}</Text>;
+function TabIcon({ color, name }: { color: ColorValue; name: TabIconName }) {
+  return <SymbolView name={name} size={22} tintColor={color} />;
 }

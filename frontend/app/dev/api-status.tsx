@@ -9,6 +9,7 @@ import { MOCK_DATA_NOTICE, SURVEY_DATE, SURVEY_LOCATION, mockMarkets, mockProduc
 import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
+import { BackHeader } from '@/src/components/common/BackHeader';
 import { Screen } from '@/src/components/common/Screen';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
@@ -25,7 +26,7 @@ export default function ApiStatusScreen() {
 
   return (
     <Screen>
-      <AppText variant="title">{t('apiStatus')}</AppText>
+      <BackHeader title={t('apiStatus')} subtitle="Developer diagnostics" />
       <AppCard>
         <StatusRow label={t('apiMode')} value={USE_MOCK_API ? 'mock' : 'real'} />
         <StatusRow label={t('apiBaseUrl')} value={API_BASE_URL} />

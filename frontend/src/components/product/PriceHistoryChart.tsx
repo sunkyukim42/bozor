@@ -5,13 +5,14 @@ import type { PriceHistoryItem } from '@/src/api/apiTypes';
 import { AppText } from '@/src/components/common/AppText';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
+import { getTypicalPrice } from '@/src/utils/displayLabels';
 import { formatCurrency } from '@/src/utils/formatCurrency';
 
 export function PriceHistoryChart({ items }: { items: PriceHistoryItem[] }) {
   if (items.length === 0) {
     return null;
   }
-  const values = items.map((item) => item.fairMid);
+  const values = items.map((item) => getTypicalPrice(item));
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = Math.max(1, max - min);
@@ -20,7 +21,7 @@ export function PriceHistoryChart({ items }: { items: PriceHistoryItem[] }) {
   const points = items
     .map((item, index) => {
       const x = items.length === 1 ? width / 2 : (index / (items.length - 1)) * width;
-      const y = height - ((item.fairMid - min) / range) * (height - 24) - 12;
+      const y = height - ((getTypicalPrice(item) - min) / range) * (height - 24) - 12;
       return `${x},${y}`;
     })
     .join(' ');
@@ -31,7 +32,7 @@ export function PriceHistoryChart({ items }: { items: PriceHistoryItem[] }) {
       <View style={styles.header}>
         <AppText variant="sectionTitle">Price history</AppText>
         <AppText variant="caption" muted>
-          {formatCurrency(items.at(-1)?.fairMid ?? 0)}
+          {formatCurrency(items.at(-1) ? getTypicalPrice(items.at(-1)!) : 0)}
         </AppText>
       </View>
       <Svg height={height} viewBox={`0 0 ${width} ${height}`} width="100%">

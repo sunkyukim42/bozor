@@ -7,30 +7,38 @@ import { spacing } from '@/src/constants/spacing';
 import { formatCurrency } from '@/src/utils/formatCurrency';
 
 type PriceRangeBarProps = {
-  fairLow: number;
-  fairMid: number;
-  fairHigh: number;
+  lowPrice: number;
+  typicalPrice: number;
+  highPrice: number;
   quotedPrice?: number;
 };
 
-export function PriceRangeBar({ fairHigh, fairLow, fairMid, quotedPrice }: PriceRangeBarProps) {
-  const denominator = Math.max(1, fairHigh - fairLow);
+export function PriceRangeBar({ highPrice, lowPrice, quotedPrice, typicalPrice }: PriceRangeBarProps) {
+  const denominator = Math.max(1, highPrice - lowPrice);
   const marker = quotedPrice
-    ? Math.max(0, Math.min(100, ((quotedPrice - fairLow) / denominator) * 100))
+    ? Math.max(0, Math.min(100, ((quotedPrice - lowPrice) / denominator) * 100))
     : undefined;
 
   return (
     <View style={styles.wrap}>
+      <View style={styles.header}>
+        <AppText variant="caption" muted>
+          Fair range
+        </AppText>
+        <AppText variant="caption" style={styles.typicalLabel}>
+          Typical price
+        </AppText>
+      </View>
       <View style={styles.bar}>
-        <View style={styles.cheapZone} />
-        <View style={styles.fairZone} />
-        <View style={styles.expensiveZone} />
+        <View style={styles.lowZone} />
+        <View style={styles.typicalZone} />
+        <View style={styles.highZone} />
         {marker !== undefined ? <View style={[styles.marker, { left: `${marker}%` }]} /> : null}
       </View>
       <View style={styles.labels}>
-        <RangeLabel title="fairLow" value={fairLow} />
-        <RangeLabel title="fairMid" value={fairMid} />
-        <RangeLabel title="fairHigh" value={fairHigh} />
+        <RangeLabel title="Low" value={lowPrice} />
+        <RangeLabel title="Typical" value={typicalPrice} />
+        <RangeLabel title="High" value={highPrice} />
       </View>
     </View>
   );
@@ -57,22 +65,23 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
-  cheapZone: {
-    backgroundColor: colors.cheap,
-    flex: 1,
+  header: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  expensiveZone: {
+  highZone: {
     backgroundColor: colors.expensive,
-    flex: 1,
-  },
-  fairZone: {
-    backgroundColor: colors.fair,
     flex: 1,
   },
   labels: {
     flexDirection: 'row',
     gap: spacing.sm,
     justifyContent: 'space-between',
+  },
+  lowZone: {
+    backgroundColor: colors.cheap,
+    flex: 1,
   },
   marker: {
     backgroundColor: colors.textPrimary,
@@ -87,7 +96,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rangeValue: {
-    fontWeight: '800',
+    fontWeight: '700',
+  },
+  typicalLabel: {
+    color: colors.primary,
+    fontWeight: '700',
+  },
+  typicalZone: {
+    backgroundColor: colors.fair,
+    flex: 1,
   },
   wrap: {
     gap: spacing.sm,

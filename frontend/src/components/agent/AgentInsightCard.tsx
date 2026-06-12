@@ -8,7 +8,7 @@ import { AppText } from '@/src/components/common/AppText';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
-import { formatCurrency, formatPercent } from '@/src/utils/formatCurrency';
+import { getPriceInsightDisplayMetrics } from '@/src/utils/displayLabels';
 
 export function AgentInsightCard({
   insight,
@@ -19,39 +19,42 @@ export function AgentInsightCard({
 }) {
   const { t } = useI18n();
   const verdictMismatch = priceCheckVerdict && priceCheckVerdict !== insight.backendVerdict;
+  const metrics = getPriceInsightDisplayMetrics(insight);
+
   return (
     <AppCard>
       <View style={styles.header}>
         <AppText variant="sectionTitle">{t('agent.priceInsight.title')}</AppText>
         <AppText variant="caption" style={styles.badge}>
-          {insight.backendVerdict}
+          Price insight
         </AppText>
       </View>
       <AppText variant="caption" muted>
-        {t('agent.mockNotice')} {t('agent.difyNotConnected')}
+        Data-based insight
       </AppText>
       {verdictMismatch ? (
         <View style={styles.warning}>
           <AppText variant="caption" style={styles.warningText}>
-            Backend verdict mismatch: check result {priceCheckVerdict}, insight {insight.backendVerdict}.
+            Price insight differs from the check result: {priceCheckVerdict} / {insight.backendVerdict}.
           </AppText>
         </View>
       ) : null}
       <AppText>{insight.insightText}</AppText>
       <AppText muted>{insight.confidenceExplanation}</AppText>
-      <View style={styles.metrics}>
-        {insight.fairMid !== undefined ? <Metric label="fairMid" value={formatCurrency(insight.fairMid)} /> : null}
-        {insight.overFairHighPercent !== undefined ? (
-          <Metric label="overFairHighPercent" value={formatPercent(insight.overFairHighPercent)} />
-        ) : null}
-      </View>
+      {metrics.length > 0 ? (
+        <View style={styles.metrics}>
+          {metrics.map((metric) => (
+            <Metric key={metric.label} label={metric.label} value={metric.value} />
+          ))}
+        </View>
+      ) : null}
       <AppText variant="caption" muted>
         {insight.sourceSummary}
       </AppText>
       <AppText style={styles.action}>{insight.recommendedAction}</AppText>
       {insight.optionalBargainPhrase ? (
         <AppText variant="caption" muted>
-          Optional phrase: {insight.optionalBargainPhrase}
+          Optional reference phrase: {insight.optionalBargainPhrase}
         </AppText>
       ) : null}
       <AgentSafetyFlags flags={insight.safetyFlags} />
@@ -76,7 +79,7 @@ const styles = StyleSheet.create({
   },
   badge: {
     color: colors.primary,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   header: {
     alignItems: 'center',
@@ -87,7 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   metricValue: {
-    fontWeight: '800',
+    fontWeight: '700',
   },
   metrics: {
     flexDirection: 'row',

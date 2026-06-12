@@ -5,11 +5,11 @@ export function MarketSelector({
   label = 'Market',
   markets,
   onSelect,
-  selectedMarketCode,
+  selectedValue,
 }: {
   label?: string;
   markets: MarketResponse[];
-  selectedMarketCode: string;
+  selectedValue: string;
   onSelect: (marketCode: string) => void;
 }) {
   return (
@@ -19,9 +19,9 @@ export function MarketSelector({
       options={markets.map((market) => ({
         label: market.name,
         value: market.code,
-        caption: market.marketType,
+        caption: market.marketType === 'BAZAAR' ? 'Bazaar' : 'Reference market',
       }))}
-      selectedValue={selectedMarketCode}
+      selectedValue={selectedValue}
     />
   );
 }

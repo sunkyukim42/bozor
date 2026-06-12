@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/src/components/common/AppText';
@@ -11,9 +12,10 @@ type AppButtonProps = {
   disabled?: boolean;
   loading?: boolean;
   variant?: 'primary' | 'secondary' | 'ghost';
+  leftIcon?: ReactNode;
 };
 
-export function AppButton({ disabled, loading, onPress, title, variant = 'primary' }: AppButtonProps) {
+export function AppButton({ disabled, leftIcon, loading, onPress, title, variant = 'primary' }: AppButtonProps) {
   const inactive = disabled || loading;
   return (
     <Pressable
@@ -28,8 +30,8 @@ export function AppButton({ disabled, loading, onPress, title, variant = 'primar
       ]}
     >
       <View style={styles.content}>
-        {loading ? <ActivityIndicator color={variant === 'primary' ? '#FFF' : colors.primary} /> : null}
-        <AppText style={[styles.label, variant === 'primary' ? styles.primaryText : styles.secondaryText]}>
+        {loading ? <ActivityIndicator color={variant === 'primary' ? colors.white : colors.primary} /> : leftIcon}
+        <AppText variant="button" style={[styles.label, variant === 'primary' ? styles.primaryText : styles.secondaryText]}>
           {title}
         </AppText>
       </View>
@@ -57,7 +59,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   label: {
-    fontWeight: '800',
     textAlign: 'center',
   },
   pressed: {
@@ -67,10 +68,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   primaryText: {
-    color: '#FFF',
+    color: colors.white,
   },
   secondary: {
-    backgroundColor: colors.softGreen,
+    backgroundColor: colors.primaryLight,
     borderColor: colors.primary,
     borderWidth: 1,
   },

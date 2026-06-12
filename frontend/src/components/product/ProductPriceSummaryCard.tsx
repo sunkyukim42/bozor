@@ -7,9 +7,18 @@ import { ConfidenceBadge } from '@/src/components/common/ConfidenceBadge';
 import { SourceBreakdown } from '@/src/components/common/SourceBreakdown';
 import { PriceRangeBar } from '@/src/components/price/PriceRangeBar';
 import { spacing } from '@/src/constants/spacing';
+import {
+  formatDataContext,
+  formatSurveyMetadata,
+  getFairRangeDisplay,
+  getTypicalPrice,
+} from '@/src/utils/displayLabels';
 import { formatCurrency } from '@/src/utils/formatCurrency';
 
 export function ProductPriceSummaryCard({ compact, summary }: { summary: PriceSummaryResponse; compact?: boolean }) {
+  const range = getFairRangeDisplay(summary);
+  const metadata = formatSurveyMetadata(summary);
+
   return (
     <AppCard>
       <View style={styles.header}>
@@ -17,49 +26,33 @@ export function ProductPriceSummaryCard({ compact, summary }: { summary: PriceSu
           <AppText variant="caption" muted>
             {summary.marketName}
           </AppText>
-          <AppText variant={compact ? 'sectionTitle' : 'priceHero'}>{formatCurrency(summary.fairMid)}</AppText>
+          <AppText variant={compact ? 'sectionTitle' : 'priceHero'}>{formatCurrency(getTypicalPrice(summary))}</AppText>
+          <AppText variant="caption" muted>
+            Typical price
+          </AppText>
         </View>
         <ConfidenceBadge score={summary.confidenceScore} />
       </View>
-      <PriceRangeBar fairHigh={summary.fairHigh} fairLow={summary.fairLow} fairMid={summary.fairMid} />
+      <PriceRangeBar highPrice={range.highPrice} lowPrice={range.lowPrice} typicalPrice={range.typicalPrice} />
       <View style={styles.metaRow}>
         <AppText variant="caption" muted>
-          sampleCount: {summary.sampleCount}
+          {formatDataContext(summary)}
         </AppText>
         <AppText variant="caption" muted>
-          {summary.summaryDate}
+          Updated {summary.summaryDate}
         </AppText>
       </View>
-      <SummaryMetadata summary={summary} />
+      {metadata.length > 0 ? (
+        <View style={styles.metadata}>
+          {metadata.map((item) => (
+            <AppText key={item} variant="caption" muted>
+              {item}
+            </AppText>
+          ))}
+        </View>
+      ) : null}
       <SourceBreakdown sources={summary.sourceBreakdown} />
     </AppCard>
-  );
-}
-
-function SummaryMetadata({ summary }: { summary: PriceSummaryResponse }) {
-  const details = [
-    summary.surveyDate ? `surveyDate: ${summary.surveyDate}` : null,
-    summary.location ? `location: ${summary.location}` : null,
-    summary.dataSource ? `source: ${summary.dataSource}` : null,
-  ].filter(Boolean);
-
-  if (details.length === 0 && !summary.dataNote) {
-    return null;
-  }
-
-  return (
-    <View style={styles.metadata}>
-      {details.length > 0 ? (
-        <AppText variant="caption" muted>
-          {details.join(' · ')}
-        </AppText>
-      ) : null}
-      {summary.dataNote ? (
-        <AppText variant="caption" muted>
-          {summary.dataNote}
-        </AppText>
-      ) : null}
-    </View>
   );
 }
 
@@ -72,6 +65,7 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: 'row',
+    gap: spacing.md,
     justifyContent: 'space-between',
     marginVertical: spacing.md,
   },

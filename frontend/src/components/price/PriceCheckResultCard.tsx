@@ -9,11 +9,20 @@ import { PriceRangeBar } from '@/src/components/price/PriceRangeBar';
 import { VerdictBadge } from '@/src/components/price/VerdictBadge';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
-import { formatCurrency, formatPercent } from '@/src/utils/formatCurrency';
+import {
+  formatDataContext,
+  formatSurveyMetadata,
+  getFairRangeDisplay,
+  getPriceCheckDisplayMetrics,
+} from '@/src/utils/displayLabels';
+import { formatCurrency } from '@/src/utils/formatCurrency';
 import { getVerdictI18nKey } from '@/src/utils/priceVerdict';
 
 export function PriceCheckResultCard({ result }: { result: PriceCheckResponse }) {
   const { t } = useI18n();
+  const range = getFairRangeDisplay(result);
+  const metrics = getPriceCheckDisplayMetrics(result);
+  const metadata = formatSurveyMetadata(result);
   const verdictMessageKey = getVerdictI18nKey(result.verdict, 'message');
   const translatedVerdictMessage = t(verdictMessageKey);
   const verdictMessage =
@@ -32,49 +41,31 @@ export function PriceCheckResultCard({ result }: { result: PriceCheckResponse })
       <AppText>{verdictMessage}</AppText>
 
       <View style={styles.metrics}>
-        <Metric label="recommendedTargetPrice" value={formatCurrency(result.recommendedTargetPrice)} />
-        <Metric label="overFairHighPercent" value={formatPercent(result.overFairHighPercent)} />
+        {metrics.map((metric) => (
+          <Metric key={metric.label} label={metric.label} value={metric.value} />
+        ))}
       </View>
 
       <PriceRangeBar
-        fairHigh={result.fairHigh}
-        fairLow={result.fairLow}
-        fairMid={result.fairMid}
+        highPrice={range.highPrice}
+        lowPrice={range.lowPrice}
         quotedPrice={result.quotedPrice}
+        typicalPrice={range.typicalPrice}
       />
       <AppText variant="caption" muted>
-        sampleCount: {result.sampleCount}
+        {formatDataContext(result)}
       </AppText>
-      <CheckMetadata result={result} />
+      {metadata.length > 0 ? (
+        <View style={styles.metadata}>
+          {metadata.map((item) => (
+            <AppText key={item} variant="caption" muted>
+              {item}
+            </AppText>
+          ))}
+        </View>
+      ) : null}
       <SourceBreakdown sources={result.sourceBreakdown} />
     </AppCard>
-  );
-}
-
-function CheckMetadata({ result }: { result: PriceCheckResponse }) {
-  const details = [
-    result.surveyDate ? `surveyDate: ${result.surveyDate}` : null,
-    result.location ? `location: ${result.location}` : null,
-    result.dataSource ? `source: ${result.dataSource}` : null,
-  ].filter(Boolean);
-
-  if (details.length === 0 && !result.dataNote) {
-    return null;
-  }
-
-  return (
-    <View style={styles.metadata}>
-      {details.length > 0 ? (
-        <AppText variant="caption" muted>
-          {details.join(' · ')}
-        </AppText>
-      ) : null}
-      {result.dataNote ? (
-        <AppText variant="caption" muted>
-          {result.dataNote}
-        </AppText>
-      ) : null}
-    </View>
   );
 }
 
@@ -99,7 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   metricValue: {
-    fontWeight: '800',
+    fontWeight: '700',
   },
   metrics: {
     flexDirection: 'row',

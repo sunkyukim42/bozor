@@ -64,6 +64,7 @@ function RootLayoutNav() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="product/[productCode]" />
             <Stack.Screen name="dev/api-status" />
+            <Stack.Screen name="dev/agent-lab" />
           </Stack>
         </ThemeProvider>
       </QueryClientProvider>

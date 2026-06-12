@@ -7,19 +7,22 @@ import { AppText } from '@/src/components/common/AppText';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
+import { formatSourceSummary } from '@/src/utils/displayLabels';
 
 export function MarketBriefingCard({ briefing }: { briefing: MarketBriefingResponse }) {
   const { t } = useI18n();
+  const sourceSummary = formatSourceSummary(briefing.sourceSummary);
+
   return (
     <AppCard>
       <View style={styles.header}>
         <AppText variant="sectionTitle">{t('agent.marketBriefing.title')}</AppText>
         <AppText variant="caption" style={styles.badge}>
-          Agent
+          Market insight
         </AppText>
       </View>
       <AppText variant="caption" muted>
-        {t('agent.mockNotice')} {t('agent.difyNotConnected')}
+        Based on field survey data
       </AppText>
       <AppText style={styles.title}>{briefing.briefingTitle}</AppText>
       <AppText muted>{briefing.summaryText}</AppText>
@@ -59,12 +62,9 @@ export function MarketBriefingCard({ briefing }: { briefing: MarketBriefingRespo
         </View>
       ) : null}
 
-      {briefing.sourceSummary ? (
+      {sourceSummary ? (
         <AppText variant="caption" muted>
-          sampleCount: {briefing.sourceSummary.sampleCount ?? 'n/a'} / confidence:{' '}
-          {briefing.sourceSummary.confidenceScore !== undefined
-            ? `${Math.round(briefing.sourceSummary.confidenceScore * 100)}%`
-            : 'n/a'}
+          {sourceSummary}
         </AppText>
       ) : null}
       <AgentSafetyFlags />
@@ -75,7 +75,7 @@ export function MarketBriefingCard({ briefing }: { briefing: MarketBriefingRespo
 const styles = StyleSheet.create({
   badge: {
     color: colors.primary,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   header: {
     alignItems: 'center',
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   title: {
-    fontWeight: '800',
+    fontWeight: '700',
     marginTop: spacing.md,
   },
   warning: {

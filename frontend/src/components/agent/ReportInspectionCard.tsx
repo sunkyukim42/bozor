@@ -7,10 +7,14 @@ import { AppText } from '@/src/components/common/AppText';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
+import { formatMatchedProductLabel, formatSourceSummary } from '@/src/utils/displayLabels';
 
 export function ReportInspectionCard({ inspection }: { inspection: ReportInspectResponse }) {
   const { t } = useI18n();
   const warning = inspection.statusSuggestion !== 'PENDING';
+  const matchedProduct = formatMatchedProductLabel(inspection);
+  const sourceSummary = formatSourceSummary(inspection.sourceSummary);
+
   return (
     <AppCard>
       <View style={styles.header}>
@@ -20,17 +24,17 @@ export function ReportInspectionCard({ inspection }: { inspection: ReportInspect
         </AppText>
       </View>
       <AppText variant="caption" muted>
-        {t('agent.mockNotice')} {t('agent.noAutoApproval')}
+        Report check · Reports stay under review
       </AppText>
       <View style={warning ? styles.warning : styles.info}>
         <AppText style={warning ? styles.warningText : styles.infoText}>
-          {inspection.statusSuggestion}
-          {inspection.needsHumanReview ? ` / ${t('agent.needsHumanReview')}` : ''}
+          {inspection.statusSuggestion === 'PENDING' ? 'Ready for normal review' : 'Needs review'}
+          {inspection.needsHumanReview ? ` · ${t('agent.needsHumanReview')}` : ''}
         </AppText>
       </View>
-      {inspection.normalizedProductCode ? (
+      {matchedProduct ? (
         <AppText variant="caption" muted>
-          normalizedProductCode: {inspection.normalizedProductCode}
+          {matchedProduct}
         </AppText>
       ) : null}
       {inspection.anomalyReasons.map((reason) => (
@@ -40,12 +44,9 @@ export function ReportInspectionCard({ inspection }: { inspection: ReportInspect
       ))}
       <AppText>{inspection.userMessage}</AppText>
       <AppText muted>{inspection.reviewNote}</AppText>
-      {inspection.sourceSummary ? (
+      {sourceSummary ? (
         <AppText variant="caption" muted>
-          sampleCount: {inspection.sourceSummary.sampleCount ?? 'n/a'} / confidence:{' '}
-          {inspection.sourceSummary.confidenceScore !== undefined
-            ? `${Math.round(inspection.sourceSummary.confidenceScore * 100)}%`
-            : 'n/a'}
+          {sourceSummary}
         </AppText>
       ) : null}
       <AgentSafetyFlags flags={inspection.safetyFlags} />
@@ -55,7 +56,7 @@ export function ReportInspectionCard({ inspection }: { inspection: ReportInspect
 
 const styles = StyleSheet.create({
   badge: {
-    fontWeight: '800',
+    fontWeight: '700',
   },
   header: {
     alignItems: 'center',
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     color: colors.primary,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   lowBadge: {
     color: colors.primary,
@@ -84,6 +85,6 @@ const styles = StyleSheet.create({
   },
   warningText: {
     color: colors.expensive,
-    fontWeight: '800',
+    fontWeight: '700',
   },
 });

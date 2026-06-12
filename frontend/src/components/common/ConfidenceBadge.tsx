@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/src/components/common/AppText';
 import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/radius';
+import { formatShortConfidenceLabel } from '@/src/utils/displayLabels';
 
 export function ConfidenceBadge({ score }: { score: number }) {
   const percent = Math.round(score * 100);
@@ -10,7 +11,7 @@ export function ConfidenceBadge({ score }: { score: number }) {
   const background = level === 'high' ? colors.softGreen : level === 'medium' ? colors.softAmber : colors.softRed;
   const foreground =
     level === 'high' ? colors.confidenceHigh : level === 'medium' ? colors.confidenceMedium : colors.confidenceLow;
-  const label = level === 'high' ? '신뢰도 높음' : level === 'medium' ? '참고 가능' : '데이터 부족';
+  const label = formatShortConfidenceLabel(score);
 
   return (
     <View style={[styles.badge, { backgroundColor: background }]}>
@@ -29,6 +30,6 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   text: {
-    fontWeight: '800',
+    fontWeight: '700',
   },
 });

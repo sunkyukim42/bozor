@@ -15,11 +15,11 @@ export function FieldSurveyPlanCard({ plan }: { plan: FieldSurveyPlanResponse })
       <View style={styles.header}>
         <AppText variant="sectionTitle">{t('agent.fieldSurveyPlan.title')}</AppText>
         <AppText variant="caption" style={styles.badge}>
-          Agent
+          Survey plan
         </AppText>
       </View>
       <AppText variant="caption" muted>
-        {t('agent.mockNotice')} {t('agent.difyNotConnected')}
+        Based on field survey data
       </AppText>
       <AppText>{plan.recommendedPlan}</AppText>
       {targets.length > 0 ? (

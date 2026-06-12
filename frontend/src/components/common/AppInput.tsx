@@ -12,10 +12,12 @@ type AppInputProps = {
   onChangeText: (value: string) => void;
   placeholder?: string;
   error?: string;
+  helperText?: string;
   keyboardType?: KeyboardTypeOptions;
+  multiline?: boolean;
 };
 
-export function AppInput({ error, keyboardType, label, onChangeText, placeholder, value }: AppInputProps) {
+export function AppInput({ error, helperText, keyboardType, label, multiline, onChangeText, placeholder, value }: AppInputProps) {
   return (
     <View style={styles.wrap}>
       <AppText variant="caption" style={styles.label}>
@@ -26,9 +28,15 @@ export function AppInput({ error, keyboardType, label, onChangeText, placeholder
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={colors.textSecondary}
-        style={[styles.input, error && styles.errorBorder]}
+        multiline={multiline}
+        style={[styles.input, multiline && styles.multiline, error && styles.errorBorder]}
         value={value}
       />
+      {helperText && !error ? (
+        <AppText variant="caption" muted>
+          {helperText}
+        </AppText>
+      ) : null}
       {error ? (
         <AppText variant="caption" style={styles.errorText}>
           {error}
@@ -51,12 +59,17 @@ const styles = StyleSheet.create({
     borderRadius: radius.input,
     borderWidth: 1,
     color: colors.textPrimary,
-    fontSize: 18,
+    fontSize: 16,
     minHeight: 52,
     paddingHorizontal: spacing.md,
   },
   label: {
-    fontWeight: '800',
+    fontWeight: '700',
+  },
+  multiline: {
+    minHeight: 92,
+    paddingVertical: spacing.sm,
+    textAlignVertical: 'top',
   },
   wrap: {
     gap: spacing.xs,

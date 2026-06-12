@@ -4,16 +4,7 @@ import type { SourceBreakdown as SourceBreakdownType } from '@/src/api/apiTypes'
 import { AppText } from '@/src/components/common/AppText';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
-
-const sourceLabels: Record<string, string> = {
-  FIELD_SURVEY: 'Field survey',
-  USER_REPORT: 'User reports',
-  STAT_UZ: 'Stat.uz',
-  KORZINKA: 'Korzinka',
-  KORZINKA_REFERENCE: 'Korzinka reference',
-  MAKRO: 'Makro',
-  DEVELOPMENT_DEMO: 'Development demo',
-};
+import { formatSourceBreakdownLabel } from '@/src/utils/displayLabels';
 
 export function SourceBreakdown({ sources }: { sources: SourceBreakdownType }) {
   return (
@@ -23,10 +14,7 @@ export function SourceBreakdown({ sources }: { sources: SourceBreakdownType }) {
         .map(([source, count]) => (
           <View key={source} style={styles.row}>
             <AppText variant="caption" muted>
-              {sourceLabels[source] ?? source}
-            </AppText>
-            <AppText variant="caption" style={styles.count}>
-              {count}
+              {formatSourceBreakdownLabel(source, count)}
             </AppText>
           </View>
         ))}
@@ -35,13 +23,9 @@ export function SourceBreakdown({ sources }: { sources: SourceBreakdownType }) {
 }
 
 const styles = StyleSheet.create({
-  count: {
-    fontWeight: '800',
-  },
   row: {
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
   },
   wrap: {
     borderTopColor: colors.border,

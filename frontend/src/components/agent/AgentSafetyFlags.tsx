@@ -9,10 +9,9 @@ import { useI18n } from '@/src/hooks/useI18n';
 export function AgentSafetyFlags({ flags }: { flags?: AgentSafetyFlagsType }) {
   const { t } = useI18n();
   const rows = [
-    flags?.usedOnlyBackendPrices !== false ? 'Backend price data only' : null,
-    flags?.noAiGeneratedFairPrice !== false ? 'No AI-generated fair price' : null,
+    flags?.usedOnlyBackendPrices !== false ? 'Fair range comes from reference data' : null,
+    flags?.noAiGeneratedFairPrice !== false ? 'Typical price uses recorded market data' : null,
     flags?.noAutoApproval !== false ? t('agent.noAutoApproval') : null,
-    flags?.difyConnected ? null : t('agent.difyNotConnected'),
   ].filter(Boolean);
 
   if (rows.length === 0) {

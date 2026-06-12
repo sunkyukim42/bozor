@@ -22,20 +22,20 @@ export function AgentInsightCard({
   const metrics = getPriceInsightDisplayMetrics(insight);
 
   return (
-    <AppCard>
+    <AppCard style={styles.card}>
       <View style={styles.header}>
         <AppText variant="sectionTitle">{t('agent.priceInsight.title')}</AppText>
         <AppText variant="caption" style={styles.badge}>
-          Price insight
+          Reference only
         </AppText>
       </View>
       <AppText variant="caption" muted>
-        Data-based insight
+        Based on recent field data
       </AppText>
       {verdictMismatch ? (
         <View style={styles.warning}>
           <AppText variant="caption" style={styles.warningText}>
-            Price insight differs from the check result: {priceCheckVerdict} / {insight.backendVerdict}.
+            Price insight differs from the check result. Use the price check result as the main reference.
           </AppText>
         </View>
       ) : null}
@@ -52,11 +52,6 @@ export function AgentInsightCard({
         {insight.sourceSummary}
       </AppText>
       <AppText style={styles.action}>{insight.recommendedAction}</AppText>
-      {insight.optionalBargainPhrase ? (
-        <AppText variant="caption" muted>
-          Optional reference phrase: {insight.optionalBargainPhrase}
-        </AppText>
-      ) : null}
       <AgentSafetyFlags flags={insight.safetyFlags} />
     </AppCard>
   );
@@ -80,6 +75,9 @@ const styles = StyleSheet.create({
   badge: {
     color: colors.primary,
     fontWeight: '700',
+  },
+  card: {
+    gap: spacing.sm,
   },
   header: {
     alignItems: 'center',

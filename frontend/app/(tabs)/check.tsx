@@ -1,8 +1,10 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getFriendlyErrorMessage } from '@/src/api/apiErrors';
 import { AgentInsightCard } from '@/src/components/agent/AgentInsightCard';
+import { AppCard } from '@/src/components/common/AppCard';
+import { AppHeader } from '@/src/components/common/AppHeader';
 import { AppText } from '@/src/components/common/AppText';
 import { ErrorState } from '@/src/components/common/ErrorState';
 import { LoadingState } from '@/src/components/common/LoadingState';
@@ -18,17 +20,14 @@ import { useProducts } from '@/src/hooks/useProducts';
 
 export default function CheckScreen() {
   const params = useLocalSearchParams<{ productCode?: string }>();
-  const { locale, t } = useI18n();
+  const { locale } = useI18n();
+  const [formKey, setFormKey] = useState(0);
   const marketCode = useSelectedMarket();
   const products = useProducts();
   const markets = useMarkets();
   const checkMutation = usePriceCheck();
-  const {
-    data: priceInsightData,
-    error: priceInsightError,
-    isPending: priceInsightPending,
-    mutate: requestPriceInsight,
-  } = usePriceInsight();
+  const priceInsightMutation = usePriceInsight();
+  const requestPriceInsight = priceInsightMutation.mutate;
 
   useEffect(() => {
     if (!checkMutation.data) {
@@ -44,6 +43,12 @@ export default function CheckScreen() {
     });
   }, [checkMutation.data, locale, requestPriceInsight]);
 
+  function handleReset() {
+    checkMutation.reset();
+    priceInsightMutation.reset();
+    setFormKey((value) => value + 1);
+  }
+
   if (products.isLoading || markets.isLoading) {
     return <LoadingState />;
   }
@@ -53,10 +58,14 @@ export default function CheckScreen() {
 
   return (
     <Screen>
-      <AppText variant="title">{t('checkPrice')}</AppText>
-      <AppText muted>Backend price data remains the source of truth. Agent text is explanatory only.</AppText>
+      <AppHeader title="Price Check" subtitle="AI Price Guide" />
+      <AppCard>
+        <AppText>
+          {"Select a product and market, then enter the price you were quoted. We'll compare it against the fair range."}
+        </AppText>
+      </AppCard>
       <PriceCheckForm
-        key={params.productCode ?? 'manual-check'}
+        key={`${params.productCode ?? 'manual-check'}-${formKey}`}
         defaultMarketCode={marketCode}
         defaultProductCode={params.productCode}
         loading={checkMutation.isPending}
@@ -65,11 +74,11 @@ export default function CheckScreen() {
         onSubmit={(request) => checkMutation.mutate(request)}
       />
       {checkMutation.error ? <ErrorState message={getFriendlyErrorMessage(checkMutation.error)} /> : null}
-      {checkMutation.data ? <PriceCheckResultCard result={checkMutation.data} /> : null}
-      {priceInsightPending ? <LoadingState /> : null}
-      {priceInsightError ? <ErrorState message={getFriendlyErrorMessage(priceInsightError)} /> : null}
-      {priceInsightData ? (
-        <AgentInsightCard insight={priceInsightData} priceCheckVerdict={checkMutation.data?.verdict} />
+      {checkMutation.data ? <PriceCheckResultCard result={checkMutation.data} onReset={handleReset} /> : null}
+      {priceInsightMutation.isPending ? <LoadingState /> : null}
+      {priceInsightMutation.error ? <ErrorState message={getFriendlyErrorMessage(priceInsightMutation.error)} /> : null}
+      {priceInsightMutation.data ? (
+        <AgentInsightCard insight={priceInsightMutation.data} priceCheckVerdict={checkMutation.data?.verdict} />
       ) : null}
     </Screen>
   );

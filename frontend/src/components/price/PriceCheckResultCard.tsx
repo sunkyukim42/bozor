@@ -1,49 +1,55 @@
 import { StyleSheet, View } from 'react-native';
 
 import type { PriceCheckResponse } from '@/src/api/apiTypes';
+import { AppButton } from '@/src/components/common/AppButton';
 import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
 import { ConfidenceBadge } from '@/src/components/common/ConfidenceBadge';
-import { SourceBreakdown } from '@/src/components/common/SourceBreakdown';
 import { PriceRangeBar } from '@/src/components/price/PriceRangeBar';
-import { VerdictBadge } from '@/src/components/price/VerdictBadge';
+import { colors } from '@/src/constants/colors';
+import { radius } from '@/src/constants/radius';
 import { spacing } from '@/src/constants/spacing';
-import { useI18n } from '@/src/hooks/useI18n';
 import {
+  formatConfidenceLabel,
   formatDataContext,
   formatSurveyMetadata,
   getFairRangeDisplay,
-  getPriceCheckDisplayMetrics,
+  getPriceCheckResultDisplay,
 } from '@/src/utils/displayLabels';
 import { formatCurrency } from '@/src/utils/formatCurrency';
-import { getVerdictI18nKey } from '@/src/utils/priceVerdict';
+import { formatUnitLabel } from '@/src/utils/unitLabels';
 
-export function PriceCheckResultCard({ result }: { result: PriceCheckResponse }) {
-  const { t } = useI18n();
+export function PriceCheckResultCard({ onReset, result }: { result: PriceCheckResponse; onReset?: () => void }) {
   const range = getFairRangeDisplay(result);
-  const metrics = getPriceCheckDisplayMetrics(result);
+  const display = getPriceCheckResultDisplay(result);
   const metadata = formatSurveyMetadata(result);
-  const verdictMessageKey = getVerdictI18nKey(result.verdict, 'message');
-  const translatedVerdictMessage = t(verdictMessageKey);
-  const verdictMessage =
-    translatedVerdictMessage === verdictMessageKey ? result.verdictMessage : translatedVerdictMessage;
+  const dataRows = [formatDataContext(result), formatConfidenceLabel(result.confidenceScore), ...metadata];
 
   return (
-    <AppCard>
+    <AppCard style={styles.card}>
+      <View style={[styles.resultPanel, tonePanelStyles[display.tone]]}>
+        <AppText variant="sectionTitle" style={toneTitleStyles[display.tone]}>
+          {display.title}
+        </AppText>
+        <AppText>{display.recommendation}</AppText>
+      </View>
+
       <View style={styles.header}>
-        <VerdictBadge verdict={result.verdict} />
+        <View style={styles.priceBlock}>
+          <AppText variant="caption" muted>
+            Quoted price
+          </AppText>
+          <AppText variant="priceHero">{formatCurrency(result.quotedPrice)}</AppText>
+          <AppText variant="caption" muted>
+            per {formatUnitLabel(result.unitCode)}
+          </AppText>
+        </View>
         <ConfidenceBadge score={result.confidenceScore} />
       </View>
-      <AppText variant="caption" muted>
-        Quoted price · {result.unitCode}
-      </AppText>
-      <AppText variant="priceHero">{formatCurrency(result.quotedPrice)}</AppText>
-      <AppText>{verdictMessage}</AppText>
 
-      <View style={styles.metrics}>
-        {metrics.map((metric) => (
-          <Metric key={metric.label} label={metric.label} value={metric.value} />
-        ))}
+      <View style={styles.comparison}>
+        <Metric label="Typical price" value={formatCurrency(range.typicalPrice)} />
+        <Metric label="Fair range" value={`${formatCurrency(range.lowPrice)} - ${formatCurrency(range.highPrice)}`} />
       </View>
 
       <PriceRangeBar
@@ -52,19 +58,16 @@ export function PriceCheckResultCard({ result }: { result: PriceCheckResponse })
         quotedPrice={result.quotedPrice}
         typicalPrice={range.typicalPrice}
       />
-      <AppText variant="caption" muted>
-        {formatDataContext(result)}
-      </AppText>
-      {metadata.length > 0 ? (
-        <View style={styles.metadata}>
-          {metadata.map((item) => (
-            <AppText key={item} variant="caption" muted>
-              {item}
-            </AppText>
-          ))}
-        </View>
-      ) : null}
-      <SourceBreakdown sources={result.sourceBreakdown} />
+
+      <View style={styles.metadata}>
+        {Array.from(new Set(dataRows.filter(Boolean))).map((item) => (
+          <AppText key={item} variant="caption" muted>
+            {item}
+          </AppText>
+        ))}
+      </View>
+
+      {onReset ? <AppButton title="Check another price" variant="secondary" onPress={onReset} /> : null}
     </AppCard>
   );
 }
@@ -80,11 +83,56 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
+const tonePanelStyles = {
+  danger: {
+    backgroundColor: colors.softRed,
+    borderColor: colors.danger,
+  },
+  neutral: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+  },
+  success: {
+    backgroundColor: colors.softGreen,
+    borderColor: colors.success,
+  },
+  warning: {
+    backgroundColor: colors.softAmber,
+    borderColor: colors.warning,
+  },
+};
+
+const toneTitleStyles = {
+  danger: {
+    color: colors.danger,
+  },
+  neutral: {
+    color: colors.textPrimary,
+  },
+  success: {
+    color: colors.success,
+  },
+  warning: {
+    color: colors.warning,
+  },
+};
+
 const styles = StyleSheet.create({
-  header: {
-    alignItems: 'center',
+  card: {
+    gap: spacing.lg,
+  },
+  comparison: {
     flexDirection: 'row',
+    gap: spacing.md,
+  },
+  header: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: spacing.md,
     justifyContent: 'space-between',
+  },
+  metadata: {
+    gap: spacing.xs,
   },
   metric: {
     flex: 1,
@@ -92,14 +140,13 @@ const styles = StyleSheet.create({
   metricValue: {
     fontWeight: '700',
   },
-  metrics: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginVertical: spacing.md,
+  priceBlock: {
+    flex: 1,
   },
-  metadata: {
+  resultPanel: {
+    borderRadius: radius.md,
+    borderWidth: 1,
     gap: spacing.xs,
-    marginBottom: spacing.md,
-    marginTop: spacing.xs,
+    padding: spacing.md,
   },
 });

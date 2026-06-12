@@ -25,6 +25,22 @@ type MetadataLike = {
 
 export const DISPLAY_SEPARATOR = ' · ';
 
+export type ConsumerTone = 'success' | 'warning' | 'danger' | 'neutral';
+
+export type PriceCheckResultDisplay = {
+  title: string;
+  recommendation: string;
+  tone: ConsumerTone;
+  limitedData: boolean;
+};
+
+export type ReportInspectionDisplay = {
+  title: string;
+  badge: string;
+  message: string;
+  tone: ConsumerTone;
+};
+
 export function getFairRangeDisplay(value: PriceRangeLike): {
   lowPrice: number;
   typicalPrice: number;
@@ -127,6 +143,51 @@ export function getPriceCheckDisplayMetrics(result: PriceCheckResponse): { label
   return metrics;
 }
 
+export function getPriceCheckResultDisplay(result: PriceCheckResponse): PriceCheckResultDisplay {
+  const limitedData = !hasSourceData(result.sourceBreakdown) || result.confidenceScore < 0.45;
+
+  if (limitedData) {
+    return {
+      title: 'Use as reference',
+      recommendation: 'Limited data is available for this item. Compare nearby prices before relying on it.',
+      tone: 'neutral',
+      limitedData: true,
+    };
+  }
+
+  switch (result.verdict) {
+    case 'FAIR':
+      return {
+        title: 'Within the fair range',
+        recommendation: 'This price is close to the typical market range.',
+        tone: 'success',
+        limitedData: false,
+      };
+    case 'EXPENSIVE':
+      return {
+        title: 'Higher than usual',
+        recommendation: 'Compare with nearby sellers or check another stall.',
+        tone: 'warning',
+        limitedData: false,
+      };
+    case 'VERY_EXPENSIVE':
+      return {
+        title: 'Significantly above range',
+        recommendation: 'Consider checking another seller before buying.',
+        tone: 'danger',
+        limitedData: false,
+      };
+    case 'CHEAP':
+    default:
+      return {
+        title: 'Use as reference',
+        recommendation: 'This price is below the typical range. Check the product and unit before relying on it.',
+        tone: 'neutral',
+        limitedData: false,
+      };
+  }
+}
+
 export function getPriceInsightDisplayMetrics(insight: PriceInsightResponse): { label: string; value: string }[] {
   const metrics: { label: string; value: string }[] = [];
   if (insight.fairMid !== undefined) {
@@ -139,7 +200,41 @@ export function getPriceInsightDisplayMetrics(insight: PriceInsightResponse): { 
 }
 
 export function formatMatchedProductLabel(inspection: Pick<ReportInspectResponse, 'normalizedProductCode'>): string | null {
-  return inspection.normalizedProductCode ? `Matched product: ${inspection.normalizedProductCode}` : null;
+  return inspection.normalizedProductCode ? 'Matched to a standard product' : null;
+}
+
+export function getReportInspectionDisplay(inspection: ReportInspectResponse): ReportInspectionDisplay {
+  const highRisk = inspection.riskLevel === 'HIGH' || inspection.statusSuggestion === 'FLAGGED';
+  const needsReview =
+    highRisk ||
+    inspection.riskLevel === 'MEDIUM' ||
+    inspection.statusSuggestion === 'REVIEW_REQUIRED' ||
+    inspection.needsHumanReview;
+
+  if (highRisk) {
+    return {
+      title: `Report Check${DISPLAY_SEPARATOR}Needs review`,
+      badge: 'Manual review',
+      message: 'This report needs manual review before it can affect price summaries.',
+      tone: 'danger',
+    };
+  }
+
+  if (needsReview) {
+    return {
+      title: `Report Check${DISPLAY_SEPARATOR}Needs review`,
+      badge: 'Review required',
+      message: 'This price is outside the recent reference range and will stay under review.',
+      tone: 'warning',
+    };
+  }
+
+  return {
+    title: `Report Check${DISPLAY_SEPARATOR}Looks normal`,
+    badge: 'Looks normal',
+    message: 'This report is consistent with recent field data and will stay under review.',
+    tone: 'success',
+  };
 }
 
 export function formatProductSubtitle(product: Pick<ProductResponse, 'nameUz' | 'nameRu' | 'nameKo'>): string {

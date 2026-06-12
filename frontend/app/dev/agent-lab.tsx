@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from 'react';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -16,25 +17,41 @@ import { AppCard } from '@/src/components/common/AppCard';
 import { AppText } from '@/src/components/common/AppText';
 import { BackHeader } from '@/src/components/common/BackHeader';
 import { Screen } from '@/src/components/common/Screen';
+import { colors } from '@/src/constants/colors';
+import { radius } from '@/src/constants/radius';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
 
 type AgentSmokeKey = 'product-normalize' | 'report-inspect' | 'price-insight' | 'market-briefing' | 'field-survey-plan';
+
+type SmokeResult = {
+  durationMs: number;
+  payload: unknown;
+  ranAt: string;
+};
 
 const marketCode = 'TASHKENT_CHORSU';
 
 export default function AgentLabScreen() {
   const { locale, t } = useI18n();
   const [running, setRunning] = useState<AgentSmokeKey | null>(null);
-  const [results, setResults] = useState<Partial<Record<AgentSmokeKey, unknown>>>({});
+  const [results, setResults] = useState<Partial<Record<AgentSmokeKey, SmokeResult>>>({});
   const [errors, setErrors] = useState<Partial<Record<AgentSmokeKey, string>>>({});
 
   async function runSmoke(key: AgentSmokeKey) {
+    const startedAt = Date.now();
     setRunning(key);
     setErrors((current) => ({ ...current, [key]: undefined }));
     try {
-      const result = await runAgentCall(key, locale);
-      setResults((current) => ({ ...current, [key]: result }));
+      const payload = await runAgentCall(key, locale);
+      setResults((current) => ({
+        ...current,
+        [key]: {
+          durationMs: Date.now() - startedAt,
+          payload,
+          ranAt: new Date().toLocaleTimeString(),
+        },
+      }));
     } catch (error) {
       setErrors((current) => ({ ...current, [key]: getFriendlyErrorMessage(error) }));
     } finally {
@@ -43,37 +60,64 @@ export default function AgentLabScreen() {
   }
 
   return (
-    <Screen>
-      <BackHeader title="Dev Agent Lab" subtitle="Developer smoke checks" />
-      <AppCard>
+    <Screen backgroundColor={colors.devBackground}>
+      <BackHeader
+        tone="dark"
+        title="Dev Agent Lab"
+        subtitle="Developer smoke checks"
+        rightSlot={<DevBadge label="DEV" tone="warning" />}
+      />
+
+      <DevCard title="Runtime">
+        <View style={styles.badgeRow}>
+          <DevBadge label={USE_MOCK_API ? 'Mock mode' : 'Real mode'} tone={USE_MOCK_API ? 'info' : 'success'} />
+          <DevBadge label="Dify not connected" tone="warning" />
+        </View>
         <StatusRow label={t('apiMode')} value={USE_MOCK_API ? 'mock' : 'real'} />
-        <StatusRow label={t('apiBaseUrl')} value={API_BASE_URL} />
-        <AppText variant="caption" muted>
-          Spring mock agent APIs are used in real mode. Dify is not connected.
+        <StatusRow label="Backend URL" value={API_BASE_URL} />
+        <AppText variant="caption" style={styles.mutedText}>
+          Spring mock agent APIs are used in real mode. JSON preview is developer-only.
         </AppText>
-      </AppCard>
-      {agentCases.map((item) => (
-        <AppCard key={item.key}>
-          <AppText variant="sectionTitle">{item.label}</AppText>
-          <AppText muted>{item.description}</AppText>
-          <AppButton
-            loading={running === item.key}
-            onPress={() => runSmoke(item.key)}
-            title={`Run ${item.key}`}
-            variant="secondary"
-          />
-          {errors[item.key] ? (
-            <AppText variant="caption" style={styles.error}>
-              {errors[item.key]}
-            </AppText>
-          ) : null}
-          {results[item.key] ? (
-            <AppText variant="caption" style={styles.json}>
-              {JSON.stringify(results[item.key], null, 2)}
-            </AppText>
-          ) : null}
-        </AppCard>
-      ))}
+      </DevCard>
+
+      {agentCases.map((item) => {
+        const result = results[item.key];
+        const error = errors[item.key];
+        const pending = running === item.key;
+        const status = pending ? 'running' : error ? 'failed' : result ? 'passed' : 'idle';
+
+        return (
+          <DevCard key={item.key} title={item.label}>
+            <View style={styles.agentHeader}>
+              <AppText variant="caption" style={styles.mutedText}>
+                {item.description}
+              </AppText>
+              <DevBadge label={status} tone={status === 'passed' ? 'success' : status === 'failed' ? 'warning' : 'info'} />
+            </View>
+            {result ? <StatusRow label="Last run" value={`${result.ranAt} · ${result.durationMs}ms`} /> : null}
+            <AppButton
+              loading={pending}
+              onPress={() => runSmoke(item.key)}
+              title={`Run ${item.label}`}
+              variant="secondary"
+            />
+            {error ? (
+              <View style={styles.errorBox}>
+                <AppText variant="caption" style={styles.errorText}>
+                  {error}
+                </AppText>
+              </View>
+            ) : null}
+            {result ? (
+              <View style={styles.jsonBox}>
+                <AppText variant="caption" style={styles.jsonText}>
+                  {JSON.stringify(result.payload, null, 2)}
+                </AppText>
+              </View>
+            ) : null}
+          </DevCard>
+        );
+      })}
     </Screen>
   );
 }
@@ -134,32 +178,121 @@ async function runAgentCall(key: AgentSmokeKey, locale: string): Promise<unknown
   }
 }
 
+function DevCard({ children, title }: PropsWithChildren<{ title: string }>) {
+  return (
+    <AppCard style={styles.devCard}>
+      <AppText variant="sectionTitle" style={styles.devTitle}>
+        {title}
+      </AppText>
+      <View style={styles.cardBody}>{children}</View>
+    </AppCard>
+  );
+}
+
+function DevBadge({ label, tone = 'info' }: { label: string; tone?: 'info' | 'success' | 'warning' }) {
+  return (
+    <View style={[styles.badge, tone === 'success' && styles.successBadge, tone === 'warning' && styles.warningBadge]}>
+      <AppText variant="micro" style={styles.badgeText}>
+        {label}
+      </AppText>
+    </View>
+  );
+}
+
 function StatusRow({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.row}>
-      <AppText muted>{label}</AppText>
-      <AppText style={styles.value}>{value}</AppText>
+      <AppText variant="caption" style={styles.mutedText}>
+        {label}
+      </AppText>
+      <AppText variant="caption" style={styles.value}>
+        {value}
+      </AppText>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  error: {
-    color: '#B42318',
-  },
-  json: {
-    fontFamily: 'monospace',
-    marginTop: spacing.sm,
-  },
-  row: {
+  agentHeader: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.md,
     justifyContent: 'space-between',
   },
+  badge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.devSurfaceMuted,
+    borderColor: colors.devBorder,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  badgeText: {
+    color: colors.devTextPrimary,
+    fontWeight: '800',
+  },
+  cardBody: {
+    gap: spacing.md,
+  },
+  devCard: {
+    backgroundColor: colors.devSurface,
+    borderColor: colors.devBorder,
+    gap: spacing.md,
+  },
+  devTitle: {
+    color: colors.devTextPrimary,
+  },
+  errorBox: {
+    backgroundColor: colors.softRed,
+    borderRadius: radius.md,
+    padding: spacing.md,
+  },
+  errorText: {
+    color: colors.danger,
+    fontWeight: '700',
+  },
+  jsonBox: {
+    backgroundColor: colors.devBackground,
+    borderColor: colors.devBorder,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    maxHeight: 220,
+    padding: spacing.md,
+  },
+  jsonText: {
+    color: colors.devTextSecondary,
+    fontFamily: 'monospace',
+  },
+  mutedText: {
+    color: colors.devTextSecondary,
+  },
+  row: {
+    alignItems: 'center',
+    borderBottomColor: colors.devBorder,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    justifyContent: 'space-between',
+    paddingBottom: spacing.sm,
+  },
+  successBadge: {
+    backgroundColor: colors.success,
+    borderColor: colors.success,
+  },
   value: {
+    color: colors.devTextPrimary,
     flex: 1,
     fontWeight: '800',
     textAlign: 'right',
+  },
+  warningBadge: {
+    backgroundColor: colors.warning,
+    borderColor: colors.warning,
   },
 });

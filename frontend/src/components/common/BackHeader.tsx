@@ -12,24 +12,28 @@ type BackHeaderProps = {
   title: string;
   subtitle?: string;
   rightSlot?: ReactNode;
+  tone?: 'default' | 'dark';
 };
 
-export function BackHeader({ rightSlot, subtitle, title }: BackHeaderProps) {
+export function BackHeader({ rightSlot, subtitle, title, tone = 'default' }: BackHeaderProps) {
   const router = useRouter();
+  const dark = tone === 'dark';
 
   return (
     <View style={styles.wrap}>
-      <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.backButton}>
+      <Pressable accessibilityRole="button" onPress={() => router.back()} style={[styles.backButton, dark && styles.darkBackButton]}>
         <SymbolView
           name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }}
           size={20}
-          tintColor={colors.textPrimary}
+          tintColor={dark ? colors.devTextPrimary : colors.textPrimary}
         />
       </Pressable>
       <View style={styles.textBlock}>
-        <AppText variant="cardTitle">{title}</AppText>
+        <AppText variant="cardTitle" style={dark && styles.darkText}>
+          {title}
+        </AppText>
         {subtitle ? (
-          <AppText variant="caption" muted>
+          <AppText variant="caption" muted={!dark} style={dark && styles.darkMutedText}>
             {subtitle}
           </AppText>
         ) : null}
@@ -49,6 +53,16 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     width: 40,
+  },
+  darkBackButton: {
+    backgroundColor: colors.devSurface,
+    borderColor: colors.devBorder,
+  },
+  darkMutedText: {
+    color: colors.devTextSecondary,
+  },
+  darkText: {
+    color: colors.devTextPrimary,
   },
   textBlock: {
     flex: 1,

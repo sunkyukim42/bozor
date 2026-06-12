@@ -25,4 +25,10 @@ export const colors = {
   softBlue: '#DCEBF6',
   softAmber: '#F6E8C8',
   softRed: '#F7DAD6',
+  devBackground: '#101820',
+  devSurface: '#16232E',
+  devSurfaceMuted: '#22313F',
+  devBorder: '#314457',
+  devTextPrimary: '#F8FAFC',
+  devTextSecondary: '#B8C4CF',
 };

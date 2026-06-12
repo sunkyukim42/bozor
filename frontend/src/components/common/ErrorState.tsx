@@ -6,32 +6,54 @@ import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/radius';
 import { spacing } from '@/src/constants/spacing';
 
+export const defaultErrorMessage = 'We could not load price data. Please try again.';
+
 export function ErrorState({
-  message = 'We could not load price data. Please try again.',
+  message = defaultErrorMessage,
   onRetry,
+  retryLabel = 'Retry',
+  title = 'Something went wrong',
 }: {
   message?: string;
   onRetry?: () => void;
+  retryLabel?: string;
+  title?: string;
 }) {
   return (
     <View style={styles.wrap}>
+      <View style={styles.icon} />
       <AppText variant="cardTitle" style={styles.title}>
-        Error
+        {title}
       </AppText>
-      <AppText muted>{message}</AppText>
-      {onRetry ? <AppButton onPress={onRetry} title="Retry" variant="secondary" /> : null}
+      <AppText muted style={styles.message}>
+        {message}
+      </AppText>
+      {onRetry ? <AppButton onPress={onRetry} title={retryLabel} variant="secondary" /> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  icon: {
+    backgroundColor: colors.danger,
+    borderRadius: radius.pill,
+    height: 8,
+    width: 48,
+  },
+  message: {
+    textAlign: 'center',
+  },
   title: {
     color: colors.danger,
+    textAlign: 'center',
   },
   wrap: {
-    backgroundColor: colors.softRed,
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.softRed,
     borderRadius: radius.card,
-    gap: spacing.xs,
-    padding: spacing.lg,
+    borderWidth: 1,
+    gap: spacing.sm,
+    padding: spacing.xl,
   },
 });

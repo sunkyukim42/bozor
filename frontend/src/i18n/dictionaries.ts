@@ -57,9 +57,9 @@ const en: Dictionary = {
   apiStatus: 'API Status',
   apiBaseUrl: 'API Base URL',
   apiMode: 'API mode',
-  difyNotConnected: 'Dify: not connected',
+  difyNotConnected: 'Dify: backend-managed',
   telegramNotConnected: 'Telegram: not connected',
-  realApiLater: 'Real Spring API mode is available when EXPO_PUBLIC_USE_MOCK_API=false.',
+  realApiLater: 'Real Spring API mode is used when EXPO_PUBLIC_USE_MOCK_API=false.',
   aiPlaceholder: 'AI price insight assistant coming later',
   'agent.marketBriefing.title': 'AI Market Briefing',
   'agent.priceInsight.title': 'Price Insight',
@@ -67,7 +67,7 @@ const en: Dictionary = {
   'agent.productNormalize.title': 'Product Normalizer',
   'agent.fieldSurveyPlan.title': 'Field Survey Plan',
   'agent.mockNotice': 'Mock agent insight based on backend price data.',
-  'agent.difyNotConnected': 'Dify is not connected yet.',
+  'agent.difyNotConnected': 'Dify runs on the Spring backend when enabled.',
   'agent.noAutoApproval': 'No auto approval; reports stay in review.',
   'agent.needsHumanReview': 'Needs human review',
   'agent.risk.low': 'Low risk',
@@ -132,7 +132,7 @@ const ko: Dictionary = {
   apiStatus: 'API 상태',
   apiBaseUrl: 'API Base URL',
   apiMode: 'API mode',
-  realApiLater: 'Real Spring API mode is available when EXPO_PUBLIC_USE_MOCK_API=false.',
+  realApiLater: 'Real Spring API mode is used when EXPO_PUBLIC_USE_MOCK_API=false.',
 };
 
 const uz: Dictionary = {

@@ -18,10 +18,12 @@ import { radius } from '@/src/constants/radius';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
 import { routes } from '@/src/navigation/routes';
+import { getAgentProviderStatus, getDifyRuntimeStatus } from '@/src/utils/agentRuntime';
 
 export default function ApiStatusScreen() {
   const router = useRouter();
   const { t } = useI18n();
+  const difyRuntime = getDifyRuntimeStatus(USE_MOCK_API);
   const productsPing = useQuery({
     queryKey: ['devApiProductsPing', USE_MOCK_API],
     queryFn: () => getProducts(),
@@ -45,20 +47,20 @@ export default function ApiStatusScreen() {
       <DevCard title="Services">
         <View style={styles.badgeRow}>
           <DevBadge label={USE_MOCK_API ? 'Mock mode' : 'Real mode'} tone={USE_MOCK_API ? 'info' : 'success'} />
-          <DevBadge label="Dify offline" tone="warning" />
+          <DevBadge label={difyRuntime.label} tone={difyRuntime.tone} />
           <DevBadge label="Telegram offline" tone="warning" />
         </View>
         <AppText variant="caption" style={styles.mutedText}>
-          Developer-only diagnostics. No secrets are stored or displayed in this screen.
+          Developer-only diagnostics. Dify keys stay on the Spring backend and are never stored or displayed here.
         </AppText>
       </DevCard>
 
       <DevCard title="Connection Status">
         <StatusRow label={t('apiMode')} value={USE_MOCK_API ? 'mock' : 'real'} />
         <StatusRow label="Backend URL" value={API_BASE_URL} />
-        <StatusRow label="Dify API" value="not connected" />
+        <StatusRow label="Dify API" value={difyRuntime.value} />
         <StatusRow label="Telegram Bot" value="not connected" />
-        <StatusRow label="Agent API" value={USE_MOCK_API ? 'frontend mock providers' : 'Spring mock endpoints'} />
+        <StatusRow label="Agent API" value={USE_MOCK_API ? 'frontend mock providers' : 'Spring /api/v1/agent/*'} />
         <StatusRow label="Database" value={USE_MOCK_API ? 'local mock data' : 'backend seeded database required'} />
         <StatusRow label="Last sync" value={SURVEY_DATE} />
         <StatusRow label="Build" value={Constants.expoConfig?.version ?? '1.0.0'} />
@@ -76,11 +78,11 @@ export default function ApiStatusScreen() {
       </DevCard>
 
       <DevCard title="Agent APIs">
-        <StatusRow label="Product Normalizer" value={USE_MOCK_API ? 'frontend mock' : 'Spring mock endpoint'} />
-        <StatusRow label="Report Inspector" value={USE_MOCK_API ? 'frontend mock' : 'Spring mock endpoint'} />
-        <StatusRow label="Price Insight" value={USE_MOCK_API ? 'frontend mock' : 'Spring mock endpoint'} />
-        <StatusRow label="Market Briefing" value={USE_MOCK_API ? 'frontend mock' : 'Spring mock endpoint'} />
-        <StatusRow label="Field Survey Planner" value={USE_MOCK_API ? 'frontend mock' : 'Spring mock endpoint'} />
+        <StatusRow label="Product Normalizer" value={getAgentProviderStatus(USE_MOCK_API, true)} />
+        <StatusRow label="Report Inspector" value={getAgentProviderStatus(USE_MOCK_API, true)} />
+        <StatusRow label="Price Insight" value={getAgentProviderStatus(USE_MOCK_API, true)} />
+        <StatusRow label="Market Briefing" value={getAgentProviderStatus(USE_MOCK_API, false)} />
+        <StatusRow label="Field Survey Planner" value={getAgentProviderStatus(USE_MOCK_API, false)} />
         <AppText variant="caption" style={styles.mutedText}>
           Agent output explains backend data only. It does not generate fair prices or auto-approve reports.
         </AppText>

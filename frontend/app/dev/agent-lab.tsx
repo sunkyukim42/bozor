@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { API_BASE_URL, USE_MOCK_API } from '@/src/api/apiClient';
 import { getFriendlyErrorMessage } from '@/src/api/apiErrors';
+import type { AgentSafetyFlags } from '@/src/api/agentTypes';
 import {
   getFieldSurveyPlan,
   getMarketBriefing,
@@ -21,6 +22,7 @@ import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/radius';
 import { spacing } from '@/src/constants/spacing';
 import { useI18n } from '@/src/hooks/useI18n';
+import { formatDifyConnectionFromFlags, getDifyRuntimeStatus } from '@/src/utils/agentRuntime';
 
 type AgentSmokeKey = 'product-normalize' | 'report-inspect' | 'price-insight' | 'market-briefing' | 'field-survey-plan';
 
@@ -34,6 +36,7 @@ const marketCode = 'TASHKENT_CHORSU';
 
 export default function AgentLabScreen() {
   const { locale, t } = useI18n();
+  const difyRuntime = getDifyRuntimeStatus(USE_MOCK_API);
   const [running, setRunning] = useState<AgentSmokeKey | null>(null);
   const [results, setResults] = useState<Partial<Record<AgentSmokeKey, SmokeResult>>>({});
   const [errors, setErrors] = useState<Partial<Record<AgentSmokeKey, string>>>({});
@@ -71,12 +74,12 @@ export default function AgentLabScreen() {
       <DevCard title="Runtime">
         <View style={styles.badgeRow}>
           <DevBadge label={USE_MOCK_API ? 'Mock mode' : 'Real mode'} tone={USE_MOCK_API ? 'info' : 'success'} />
-          <DevBadge label="Dify not connected" tone="warning" />
+          <DevBadge label={difyRuntime.label} tone={difyRuntime.tone} />
         </View>
         <StatusRow label={t('apiMode')} value={USE_MOCK_API ? 'mock' : 'real'} />
         <StatusRow label="Backend URL" value={API_BASE_URL} />
         <AppText variant="caption" style={styles.mutedText}>
-          Spring mock agent APIs are used in real mode. JSON preview is developer-only.
+          Real mode calls Spring agent APIs. The backend may use Dify providers and safe mock fallback. JSON preview is developer-only.
         </AppText>
       </DevCard>
 
@@ -95,6 +98,7 @@ export default function AgentLabScreen() {
               <DevBadge label={status} tone={status === 'passed' ? 'success' : status === 'failed' ? 'warning' : 'info'} />
             </View>
             {result ? <StatusRow label="Last run" value={`${result.ranAt} · ${result.durationMs}ms`} /> : null}
+            {result ? <StatusRow label="Dify provider" value={formatDifyConnectionFromFlags(readSafetyFlags(result.payload))} /> : null}
             <AppButton
               loading={pending}
               onPress={() => runSmoke(item.key)}
@@ -120,6 +124,17 @@ export default function AgentLabScreen() {
       })}
     </Screen>
   );
+}
+
+function readSafetyFlags(payload: unknown): AgentSafetyFlags | undefined {
+  if (!payload || typeof payload !== 'object') {
+    return undefined;
+  }
+  const record = payload as { safetyFlags?: unknown };
+  if (!record.safetyFlags || typeof record.safetyFlags !== 'object') {
+    return undefined;
+  }
+  return record.safetyFlags as AgentSafetyFlags;
 }
 
 const agentCases: { key: AgentSmokeKey; label: string; description: string }[] = [

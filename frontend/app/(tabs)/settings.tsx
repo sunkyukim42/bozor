@@ -112,7 +112,7 @@ export default function SettingsScreen() {
         <NavigationRow
           icon={{ ios: 'cpu', android: 'memory', web: 'memory' }}
           title="Dev Agent Lab"
-          description="Run mock agent smoke checks"
+          description="Run backend agent smoke checks"
           onPress={() => router.push(routes.agentLab)}
         />
         <InfoRow

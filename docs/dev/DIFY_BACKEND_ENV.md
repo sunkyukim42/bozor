@@ -6,8 +6,9 @@ BozorCheck keeps Dify workflow keys on the Spring backend only. The React Native
 
 - Dify is disabled by default.
 - Product Normalizer can use the real Dify workflow only when `AGENT_DIFY_ENABLED=true`.
-- Report Inspector and Price Insight still use deterministic mock providers.
-- Real provider wiring for Report Inspector and Price Insight is planned for later steps.
+- Report Inspector can use the real Dify workflow only when `AGENT_DIFY_ENABLED=true`.
+- Price Insight still uses the deterministic mock provider.
+- Real provider wiring for Price Insight is planned for a later step.
 
 ## Environment Variables
 
@@ -27,6 +28,7 @@ PowerShell local example with placeholders only:
 ```powershell
 $env:AGENT_DIFY_ENABLED="true"
 $env:DIFY_PRODUCT_NORMALIZER_API_KEY="<your-product-normalizer-key>"
+$env:DIFY_REPORT_INSPECTOR_API_KEY="<your-report-inspector-key>"
 .\gradlew.bat bootRun --args='--spring.profiles.active=local' --console=plain
 ```
 

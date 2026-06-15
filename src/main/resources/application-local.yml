@@ -7,3 +7,12 @@ spring:
 bozorcheck:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:8081,http://localhost:19006,http://localhost:19009}
+
+agent:
+  dify:
+    enabled: ${AGENT_DIFY_ENABLED:false}
+    base-url: ${DIFY_BASE_URL:https://api.dify.ai/v1}
+    timeout-millis: ${AGENT_DIFY_TIMEOUT_MS:8000}
+    product-normalizer-api-key: ${DIFY_PRODUCT_NORMALIZER_API_KEY:}
+    report-inspector-api-key: ${DIFY_REPORT_INSPECTOR_API_KEY:}
+    price-insight-api-key: ${DIFY_PRICE_INSIGHT_API_KEY:}

@@ -10,11 +10,13 @@ import com.bozorcheck.domain.catalog.ProductRepository;
 import com.bozorcheck.domain.market.MarketRepository;
 import com.bozorcheck.domain.price.PriceObservation;
 import com.bozorcheck.domain.price.PriceObservationRepository;
+import com.bozorcheck.domain.price.PriceSummaryRepository;
 import com.bozorcheck.domain.price.PriceSummaryRecomputeService;
 import com.bozorcheck.domain.price.dto.PriceSummaryRecomputeRequest;
 import com.bozorcheck.domain.price.dto.PriceSummaryResponse;
 import com.bozorcheck.domain.source.DataSourceRepository;
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -37,15 +39,20 @@ class PriceSummaryRecomputeServiceTest extends AbstractPostgresIntegrationTest {
     private PriceObservationRepository priceObservationRepository;
 
     @Autowired
+    private PriceSummaryRepository priceSummaryRepository;
+
+    @Autowired
     private PriceSummaryRecomputeService recomputeService;
 
     @Test
     void recomputeCalculatesBandsBreakdownAndConfidence() {
-        LocalDate summaryDate = LocalDate.of(2026, 6, 15);
+        LocalDate summaryDate = LocalDate.of(2031, 1, 15);
         var product = productRepository.findByCode("TOMATO").orElseThrow();
         var market = marketRepository.findByCode("TASHKENT_CHORSU").orElseThrow();
         var fieldSurvey = dataSourceRepository.findByCode("FIELD_SURVEY").orElseThrow();
         var adminSeed = dataSourceRepository.findByCode("ADMIN_SEED").orElseThrow();
+
+        cleanupFixtureData(product, market, summaryDate);
 
         saveObservation(product, market, fieldSurvey, summaryDate, "10000.00");
         saveObservation(product, market, fieldSurvey, summaryDate, "12000.00");
@@ -65,6 +72,30 @@ class PriceSummaryRecomputeServiceTest extends AbstractPostgresIntegrationTest {
         assertThat(response.sourceBreakdown()).containsEntry("FIELD_SURVEY", 2);
         assertThat(response.sourceBreakdown()).containsEntry("ADMIN_SEED", 2);
         assertThat(response.confidenceScore()).isBetween(BigDecimal.ZERO, BigDecimal.ONE);
+    }
+
+    private void cleanupFixtureData(
+        com.bozorcheck.domain.catalog.Product product,
+        com.bozorcheck.domain.market.Market market,
+        LocalDate summaryDate
+    ) {
+        priceSummaryRepository.findByProductAndMarketAndSummaryDateAndSummaryGrain(
+            product,
+            market,
+            summaryDate,
+            SummaryGrain.DAILY
+        ).ifPresent(priceSummaryRepository::delete);
+
+        OffsetDateTime from = OffsetDateTime.of(summaryDate, LocalTime.MIN, ZoneOffset.UTC);
+        OffsetDateTime to = from.plusDays(1);
+        priceObservationRepository.deleteAll(priceObservationRepository
+            .findByProductAndMarketAndStatusAndObservedAtGreaterThanEqualAndObservedAtLessThanOrderByNormalizedPricePerKgAsc(
+                product,
+                market,
+                ReviewStatus.APPROVED,
+                from,
+                to
+            ));
     }
 
     private void saveObservation(

@@ -2,6 +2,7 @@ package com.bozorcheck.api;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,6 +31,21 @@ class ProductApiTest extends AbstractPostgresIntegrationTest {
         mockMvc.perform(get("/api/v1/products").param("query", "tomato"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data[*].code", hasItem("TOMATO")));
+
+        mockMvc.perform(get("/api/v1/products").param("query", "pomidor"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[*].code", hasItem("TOMATO")));
+    }
+
+    @Test
+    void querySearchIncludesTomatoLanguageAndVariantAliases() throws Exception {
+        mockMvc.perform(get("/api/v1/products").param("query", "помидор"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[*].code", hasItem("TOMATO")));
+
+        mockMvc.perform(get("/api/v1/products").param("query", "pink greenhouse pomidor"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[*].code", hasItem("TOMATO")));
     }
 
     @Test
@@ -49,6 +65,13 @@ class ProductApiTest extends AbstractPostgresIntegrationTest {
         mockMvc.perform(get("/api/v1/products").param("query", "mol go'shti"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data[*].code", hasItem("BEEF")));
+    }
+
+    @Test
+    void unknownQueryDoesNotOvermatchVegetableOil() throws Exception {
+        mockMvc.perform(get("/api/v1/products").param("query", "unknown local vegetable"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[*].code", not(hasItem("VEGETABLE_OIL"))));
     }
 
     @Test

@@ -17,7 +17,7 @@ class DatabaseMigrationTest extends AbstractPostgresIntegrationTest {
 
     @Test
     void contextLoadsAndFlywayMigrationsApply() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("4");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("5");
 
         Integer productCount = jdbcTemplate.queryForObject("select count(*) from products", Integer.class);
         Integer observationCount = jdbcTemplate.queryForObject("select count(*) from price_observations", Integer.class);
